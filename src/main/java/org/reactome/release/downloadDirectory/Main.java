@@ -44,8 +44,7 @@ public class Main {
 		String releaseDownloadDirWithNumber = Paths.get(releaseDirAbsolute,  "download_directory", releaseNumber).toString();
 		MySQLAdaptor dbAdaptor = new MySQLAdaptor(host, database, username, password, port);
 		File releaseDir = new File(releaseNumber);
-		if (!releaseDir.exists())
-		{
+		if (!releaseDir.exists()) {
 			releaseDir.mkdir();
 		}
 
@@ -60,14 +59,13 @@ public class Main {
 		{
 			stepsToRun = br.lines().filter(
 					line -> !line.startsWith("#")
-				).collect(Collectors.toSet());
+			).collect(Collectors.toSet());
 			br.close();
 		}
 		// Temporary system for catching failed steps -- this will need to be cleaned up in future
 		List<String> failedSteps = new ArrayList<>();
 		//Begin download directory steps
-		if (stepsToRun.contains("DatabaseDumps"))
-		{
+		if (stepsToRun.contains("DatabaseDumps")) {
 			// This step takes a DB Dump of the stable_identifiers and test_reactome DBs
 			// Outputs: gk_stable_ids.sql, gk_current.sql
 			try {
@@ -77,8 +75,7 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		if (stepsToRun.contains("BioPAX2") || stepsToRun.contains("BioPAX3"))
-		{
+		if (stepsToRun.contains("BioPAX2") || stepsToRun.contains("BioPAX3")) {
 			// This step runs BioPAX level 2 and BioPAX level 3 for Reactome's data using the Pathway-Exchange functions
 			// Outputs: biopax2.zip and biopax2_validator.zip, and biopax.zip and biopax_validator.zip (for level 3)
 			// These zip files should contain a number of species-specific 'owl' (BioPAX files) and 'xml' validation files
@@ -98,8 +95,7 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		if (stepsToRun.contains("GSEAOutput"))
-		{
+		if (stepsToRun.contains("GSEAOutput")) {
 			// This step converts all Human Pathways to the MSigDB format used by GSEA
 			// Output: ReactomePathways.gmt.zip
 			try {
@@ -110,8 +106,7 @@ public class Main {
 			}
 		}
 
-		if (stepsToRun.contains("FetchTestReactomeOntologyFiles"))
-		{
+		if (stepsToRun.contains("FetchTestReactomeOntologyFiles")) {
 			// This step, (formerly fetchEmptyProject), takes the blob output from the Ontology.ontology and parses it into 3 files
 			// Outputs: reactome_data_model.pprj, reactome_data_model.pont, reactome_data_model.pins
 			try {
@@ -122,8 +117,7 @@ public class Main {
 			}
 		}
 
-		if (stepsToRun.contains("PathwaySummationMappingFile"))
-		{
+		if (stepsToRun.contains("PathwaySummationMappingFile")) {
 			// This step takes all Human Pathway and creates a tab-separated file with columns containing the stableIdentifier, name, and summation of the instance
 			// Output: pathway2summation.txt
 			try {
@@ -133,8 +127,7 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		if (stepsToRun.contains("MapOldStableIds"))
-		{
+		if (stepsToRun.contains("MapOldStableIds")) {
 			// This step iterates through all StableIdentifiers and maps them to the old Reactome ID in 'REACT_#####' format. Human instances are displayed first.
 			// Output: reactome_stable_ids.txt
 			try {
@@ -145,8 +138,7 @@ public class Main {
 			}
 		}
 		// These file copy commands now use absolute paths instead of relative ones
-		if (stepsToRun.contains("GenerateGOAnnotationFile"))
-		{
+		if (stepsToRun.contains("GenerateGOAnnotationFile")) {
 			// This step generates the gene_association.reactome file
 			// Output: gene_association.reactome
 			try {
@@ -157,8 +149,7 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		if (stepsToRun.contains("models2pathways.tsv"))
-		{
+		if (stepsToRun.contains("models2pathways.tsv")) {
 			// This step copies the models2pathways.tsv file generated during the biomodels step of Release to the download_directory folder
 			logger.info("Copying models2pathways.tsv to release directory");
 			try {
@@ -168,19 +159,25 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		if (stepsToRun.contains("protegeexporter"))
-		{
-			try
-			{
+		if (stepsToRun.contains("protegeexporter")) {
+			try {
 				ProtegeExporter protegeExporter = new ProtegeExporter(props, releaseDirAbsolute, releaseNumber);
 				protegeExporter.execute(dbAdaptor);
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 				failedSteps.add("protegeexporter");
 				e.printStackTrace();
 			}
 
+<<<<<<< HEAD:downloadDirectory/src/main/java/org/reactome/release/downloadDirectory/Main.java
+		}
+		if (stepsToRun.contains("HumanPathwaysWithDiagrams"))
+		{
+			logger.info("Generating HumanPathwaysWithDiagrams file");
+			try {
+				HumanPathwaysWithDiagrams.execute(dbAdaptor, releaseNumber);
+			} catch (Exception e) {
+				failedSteps.add("HumanPathwaysWithDiagrams");
+			}
 		}
 		if (stepsToRun.contains("CreateReactome2BioSystems"))
 		{
@@ -212,7 +209,7 @@ public class Main {
 		}
 		if (failedSteps.size() > 0) {
 			String failedStepsString = StringUtils.join(failedSteps, ", ");
-			logger.warn("\nErrors were reported in the following step(s): " + failedStepsString + "\n");
+			logger.warn("Errors were reported in the following step(s): " + failedStepsString + "\n");
 		}
 		logger.info("Finished DownloadDirectory");
 	}
