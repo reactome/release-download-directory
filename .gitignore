@@ -6,4 +6,4 @@ target/
 
 # Ignore IntelliJ files
 .idea/
-downloadDirectory.iml
+download-directory.iml
