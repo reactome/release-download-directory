@@ -184,7 +184,7 @@ This step takes the following configuration options, specified in `config.proper
 
 This step creates a zip file containing an <i>NCBI BioSystems</i>-formatted `xml` file for each of Reactome's <b>primary model organisms</b>. More information on NCBI BioSystems is found at the <a href="https://www.ncbi.nlm.nih.gov/biosystems/">website</a>.
 
-This module uses the <a href="https://github.com/reactome/Pathway-Exchange/blob/master/src/org/gk/biosystems/ReactomeToBioSystemsConverter.java">ReactomeToBioSystemsConverter</a> method in Pathway-Exchange. Ensure that the jar has been installed locally, as described in an earlier <a href=#-preparing-and-running-download-directory">section</a> of this document. 
+This module uses the <a href="https://github.com/reactome/Pathway-Exchange/blob/master/src/org/gk/biosystems/ReactomeToBioSystemsConverter.java">ReactomeToBioSystemsConverter</a> method in Pathway-Exchange. Ensure that the jar has been installed locally, as described in an earlier <a href="#-preparing-and-running-download-directory">section</a> of this document. 
 
 Compare the files produced with those from an earlier release for verification the process ran successfully. 
 
