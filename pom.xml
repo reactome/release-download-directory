@@ -156,6 +156,9 @@
 	</dependencies>
 
 	<build>
+		<!-- Final name of the jar that is built -->
+		<finalName>download-directory</finalName>
+
 		<plugins>
 			<!-- sets the Java compiler version targeted by Maven -->
 			<plugin>
@@ -180,7 +183,6 @@
 							<classpathPrefix>lib/</classpathPrefix>
 						</manifest>
 					</archive>
-					<finalName>downloadDirectory</finalName>
 				</configuration>
 			</plugin>
 
@@ -190,7 +192,6 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>3.2.0</version>
 				<configuration>
-					<finalName>downloadDirectory</finalName>
 					<descriptors>
 						<descriptor>src/main/resources/assembly.xml</descriptor>
 					</descriptors>
