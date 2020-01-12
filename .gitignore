@@ -1,2 +1,9 @@
 pathway2summation.txt
 reactome_stable_ids.txt
+
+logs/
+target/
+
+# Ignore IntelliJ files
+.idea/
+downloadDirectory.iml
