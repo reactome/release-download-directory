@@ -159,7 +159,7 @@ This step will match old <b>stableIdentifiers</b> to ones in the new format. The
 
 <h4>GenerateGOAnnotationFile</h4>
 
-This step generates the 'gene_association.reactome' GO Annotation file. Information about the file format can be found <a href="https://www.ebi.ac.uk/GOA/newto">here</a>. This step will go through all <b>curated</b> ReactionlikeEvents that are in the database and generate GOA lines for a variety of instances pertaining to all 3 of the Gene Ontology annotation types: <b>Cellular Compartment</b>, <b>Molecular Function</b> and <b>Biological Process</b>.
+This step generates the 'gene_association.reactome' GO Annotation file. Information about the file format can be found <a href="http://geneontology.org/docs/go-annotation-file-gaf-format-2.1/">here</a>. This step will go through all <b>curated</b> ReactionlikeEvents that are in the database and generate GOA lines for a variety of instances pertaining to all 3 of the Gene Ontology annotation types: <b>Cellular Compartment</b>, <b>Molecular Function</b> and <b>Biological Process</b>.
 
 
 Further information on the details of the GenerateGOAnnotationFile step can be found <a href="https://github.com/reactome/release-download-directory/blob/develop/src/main/java/org/reactome/release/download_directory/GenerateGOAnnotationFile/README.md">here</a>.
