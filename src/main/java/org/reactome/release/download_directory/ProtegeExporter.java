@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory;
+package org.reactome.release.download_directory;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -51,12 +51,12 @@ public class ProtegeExporter
 	private String downloadDirectory;
 	private Set<Long> pathwayIdsToProcess = new HashSet<>();
 	private Set<String> speciesToProcess = new HashSet<>();
-	
+
 	public ProtegeExporter()
 	{
 		// Default no-arg consturctor.
 	}
-	
+
 	/**
 	 * Creates a ProtegeExporter. Various values needed for this exporter will be configured by passing in a Properties instance.
 	 * @param props - A Properties object that contains "protegeexporter.*" properties: "parallelism", "extraIncludes", "pathToWrapperScript", "filterIds", "filterSpecies".
@@ -80,21 +80,21 @@ public class ProtegeExporter
 		String pathToWrapper = props.getProperty(propsPrefix+".pathToWrapperScript");
 		this.setPathToWrapperScript(pathToWrapper);
 		this.setDownloadDirectory(downloadDir);
-		
+
 		String filterIds = props.getProperty(propsPrefix+".filterIds");
 		if (filterIds != null && !filterIds.trim().isEmpty())
 		{
 			List<String> ids = Arrays.asList(filterIds.split(","));
 			this.setPathwayIdsToProcess( ids.stream().map(Long::valueOf).collect(Collectors.toSet()) );
 		}
-		
+
 		String filterSpecies = props.getProperty(propsPrefix+".filterSpecies");
 		if (filterSpecies != null && !filterSpecies.trim().isEmpty())
 		{
 			this.setSpeciesToProcess( new HashSet<>(Arrays.asList(filterSpecies.split(","))) );
 		}
 	}
-	
+
 	public void execute(MySQLAdaptor dba)
 	{
 		// Create the protege files.
@@ -117,7 +117,7 @@ public class ProtegeExporter
 				logger.info("{} pathways from the FrontPage to export in protege format.", pathways.size());
 
 				ForkJoinPool pool = new ForkJoinPool(this.parallelism);
-				
+
 				// Prepare a shutdown hook to shut down thread pool. Shutting down
 				// the child Perl processes may not be feasible, so just let the user
 				// know they could still be running.
@@ -143,10 +143,10 @@ public class ProtegeExporter
 				pool.submit(() ->
 				{
 					// parallelStream should use the degree of parallelism set on the "pool" object.
-					pathways.parallelStream().forEach(pathway -> 
+					pathways.parallelStream().forEach(pathway ->
 					{
 						boolean processPathway = shouldPathwayBeProcessed(idFilterInEffect, speciesFilterInEffect, pathway);
-						
+
 						if (processPathway)
 						{
 							logger.info("Running protegeexport script for Pathway: {}", pathway.toString());
@@ -207,7 +207,7 @@ public class ProtegeExporter
 	 * <li>An ID filter has been specified and the pathway's ID is in that set.</li>
 	 * <li>A species filter has been specified and the pathway's species is in that set.</li></ul>
 	 * If an ID filter has NOT been specified, then no filtering by ID will occurr. If a species filter has NOT be specified, then no filtering by species will occur.
-	 * If NO filters are specified, then this function will return true for any pathway. 
+	 * If NO filters are specified, then this function will return true for any pathway.
 	 * @param idFilterInEffect
 	 * @param speciesFilterInEffect
 	 * @param pathway
@@ -273,7 +273,7 @@ public class ProtegeExporter
 		try(FileOutputStream protegeTar = new FileOutputStream(PROTEGE_ARCHIVE_PATH);
 			TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(protegeTar);)
 		{
-			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach( protegeFile -> 
+			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach( protegeFile ->
 			{
 				// Sanity check on the file: Since we're just iterating through a directory, there could be other stuff in there.
 				// Only continue if:
@@ -291,7 +291,7 @@ public class ProtegeExporter
 		{
 			e.printStackTrace();
 		}
-		
+
 		// Now that we're finished creating the tar file, move it to the download directory. Overwrite existing.
 		try
 		{
@@ -318,7 +318,7 @@ public class ProtegeExporter
 			TarArchiveEntry entry = new TarArchiveEntry(protegeFile.getFileName().toString());
 			entry.setSize(protegeFile.toFile().length());
 			tarOutStream.putArchiveEntry(entry);
-			
+
 			final int len = 1024;
 			byte[] buff = new byte[len];
 			boolean done = false;
@@ -331,11 +331,11 @@ public class ProtegeExporter
 				}
 				else
 				{
-				// If bytesRead + len > entrySize then an exception will be thrown, so always take min of len,bytesRead. 
+				// If bytesRead + len > entrySize then an exception will be thrown, so always take min of len,bytesRead.
 					tarOutStream.write(buff, 0, (int) Math.min(len, bytesRead));
 				}
 			}
-			
+
 			tarOutStream.closeArchiveEntry();
 			tarOutStream.flush();
 		}
@@ -344,9 +344,9 @@ public class ProtegeExporter
 			logger.error("Error while adding to tar: {}", e.getMessage());
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/**
 	 * Set the path to the Release directory. This path will be the base for including the Reactome GKB modules, as:
 	 * <pre>"-I"+this.releaseDirectory+"/modules"</pre>
@@ -416,5 +416,5 @@ public class ProtegeExporter
 	public void setSpeciesToProcess(Set<String> speciesToProcess)
 	{
 		this.speciesToProcess = speciesToProcess;
-	}	
+	}
 }

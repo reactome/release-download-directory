@@ -1,4 +1,4 @@
-package downloadDirectory;
+package org.reactome.release.download_directory;
 
 import static org.junit.Assert.assertTrue;
 
@@ -19,7 +19,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.gk.persistence.MySQLAdaptor;
 import org.junit.Before;
 import org.junit.Test;
-import org.reactome.release.downloadDirectory.ProtegeExporter;
+import org.reactome.release.download_directory.ProtegeExporter;
 
 @SuppressWarnings("static-method")
 public class TestProtegeExporter
@@ -33,7 +33,7 @@ public class TestProtegeExporter
 	static final String pathToJavaRoot = System.getProperty("pathToJavaRoot");
 	// Set clean up from the command line as: -Dcleanup=true
 	static final boolean cleanupAfterTest = Boolean.valueOf(System.getProperty("cleanup"));
-	
+
 	@Before
 	public void setup() throws FileNotFoundException, IOException, Exception
 	{
@@ -41,9 +41,9 @@ public class TestProtegeExporter
 		{
 			throw new Exception("pathToJavaRoot cannot be empty! Set the value when running Java as: -DpathToJavaRoot=\"/path/to/data-release-pipeline/downloadDirectory/\"");
 		}
-		
+
 		System.out.println("pathToJavaRoot is: " + pathToJavaRoot);
-		
+
 		Properties props = new Properties();
 		try(FileInputStream fis = new FileInputStream("src/test/resources/db.properties"))
 		{
@@ -56,14 +56,14 @@ public class TestProtegeExporter
 			Files.createDirectories(Paths.get(release+"/"));
 		}
 	}
-	
+
 	@Test
 	public void testProtegeExporterIT() throws SQLException, IOException
 	{
 		MySQLAdaptor adaptor = new MySQLAdaptor(TestProtegeExporter.host, TestProtegeExporter.name, TestProtegeExporter.user, TestProtegeExporter.password);
-		
+
 		ProtegeExporter testExporter = new ProtegeExporter();
-		
+
 		testExporter.setReleaseDirectory("/home/sshorser/workspaces/reactome/Release");
 		testExporter.setPathToWrapperScript(pathToJavaRoot + "src/main/resources/");
 		testExporter.setExtraIncludes(Arrays.asList("-I/home/ubuntu/perl5/lib/perl5/","-I/home/sshorser/perl5/lib/perl5/"));
@@ -76,7 +76,7 @@ public class TestProtegeExporter
 		final String pathToFinalTar = pathToJavaRoot + RELEASE_NUM + "/protege_files.tar";
 		assertTrue(Files.exists(Paths.get(pathToFinalTar)));
 		assertTrue(Files.size(Paths.get(pathToFinalTar)) > 0);
-		
+
 		// Now, let's see if the tar contents are valid.
 		try(InputStream inStream = new FileInputStream(pathToFinalTar);
 			TarArchiveInputStream tains = new TarArchiveInputStream(inStream);)
@@ -111,5 +111,5 @@ public class TestProtegeExporter
 			Files.delete(Paths.get(pathToFinalTar));
 		}
 	}
-	
+
 }
