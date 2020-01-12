@@ -156,9 +156,7 @@
 	</dependencies>
 
 	<build>
-		<!-- Final name of the jar that is built -->
 		<finalName>download-directory</finalName>
-
 		<plugins>
 			<!-- sets the Java compiler version targeted by Maven -->
 			<plugin>
@@ -178,7 +176,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.reactome.release.downloadDirectory.Main</mainClass>
+							<mainClass>org.reactome.release.download_directory.Main</mainClass>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
 						</manifest>

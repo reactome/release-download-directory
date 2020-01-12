@@ -43,8 +43,8 @@ pipeline {
 				script{
 					dir('download-directory'){
 						sh "mvn clean package -DskipTests"
-						sh "rm -rf downloadDirectory"
-						sh "unzip -o target/downloadDirectory-distr.zip"
+						sh "rm -rf download-directory"
+						sh "unzip -o target/download-directory-distr.zip"
 					}
 				}
 			}
@@ -57,7 +57,7 @@ pipeline {
 					dir('download-directory'){
 						withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
 							withCredentials([file(credentialsId: 'stepsToRun', variable: 'StepsToRun')]){
-								sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:downloadDirectory/lib/spring-instrument-4.2.4.RELEASE.jar -jar downloadDirectory/downloadDirectory.jar $ConfigFile $StepsToRun"
+								sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile $StepsToRun"
 							}
 						}
 					}
