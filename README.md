@@ -122,7 +122,7 @@ This step generates two mySQL dump files from the `stable_identifiers` and `rele
 
 <h4>BioPAX</h4>
 
-This step generates <b>BioPAX level 2</b> and <b>level 3</b> files for each species in the `release_current` database. Additional information on BioPAX can be found at its <a href="http://www.biopax.org/">website</a>. This will typically be the longest running step of Download Directory, particularly due to the generation of the level 3 BioPAX files. It makes use of the Pathway-Exchange jar that should have been locally installed during the <a href="#-preparing-and-running-download-directory">preparation</a> step of Download Directory.
+This step generates <b>BioPAX level 2</b> and <b>level 3</b> files for each species in the `release_current` database. Additional information on BioPAX can be found at its <a href="http://www.biopax.org/">website</a>.  It makes use of the Pathway-Exchange jar that should have been locally installed during the <a href="#-preparing-and-running-download-directory">preparation</a> step of Download Directory.
 
 <b>Note</b>: Due to the dependency on a local installation of Pathway-Exchange, this is also the most error-prone step of Download Directory. Any <i>attribute</i> or <i>instance</i> errors that result from BioPAX might mean that this installation will need to be updated to the most recent <a href="https://github.com/reactome/Pathway-Exchange/blob/master/ant/PathwayExchangeJar.xml">version</a>. See above for instructions on installing/updating the Pathway-Exchange module. 
 
