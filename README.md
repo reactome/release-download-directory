@@ -196,4 +196,9 @@ The steps in this section and the files they produce are generated solely for Re
 
 <h5>HumanPathwaysWithDiagrams</h5>
 
-This step creates a tab-delimited text file recording pathway database identifier, pathway name, and disease status (i.e. is it a disease pathway - true or false) for all human pathway instances which have their own pathway diagram (i.e. not a subpathway in a larger pathway diagram and not a diagram composed solely of subpathway nodes).
+This step creates a tab-delimited text file recording:
+ * pathway database identifier
+ * pathway name
+ * disease status (i.e. is it a disease pathway - true or false)
+
+for all human pathway instances which have their own pathway diagram (i.e. not a subpathway in a larger pathway diagram and not a diagram composed solely of subpathway nodes).
