@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory.GenerateGOAnnotationFile;
+package org.reactome.release.downloaddirectory.GenerateGOAnnotationFile;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

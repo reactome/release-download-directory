@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory.GenerateGOAnnotationFile;
+package org.reactome.release.downloaddirectory.GenerateGOAnnotationFile;
 
 
 import org.gk.model.GKInstance;
