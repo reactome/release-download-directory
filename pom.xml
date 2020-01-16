@@ -177,7 +177,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.reactome.release.download_directory.Main</mainClass>
+							<mainClass>org.reactome.release.downloaddirectory.Main</mainClass>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
 						</manifest>

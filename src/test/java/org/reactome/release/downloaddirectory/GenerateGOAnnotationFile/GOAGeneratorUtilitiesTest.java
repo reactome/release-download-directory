@@ -1,4 +1,4 @@
-package org.reactome.release.download_directory.GenerateGOAnnotationFile;
+package org.reactome.release.downloaddirectory.GenerateGOAnnotationFile;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;

@@ -1,4 +1,4 @@
-package org.reactome.release.download_directory;
+package org.reactome.release.downloaddirectory;
 
 import static org.junit.Assert.assertTrue;
 
@@ -19,7 +19,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.gk.persistence.MySQLAdaptor;
 import org.junit.Before;
 import org.junit.Test;
-import org.reactome.release.download_directory.ProtegeExporter;
 
 @SuppressWarnings("static-method")
 public class TestProtegeExporter

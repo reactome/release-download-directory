@@ -1,4 +1,4 @@
-package org.reactome.release.download_directory;
+package org.reactome.release.downloaddirectory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,7 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
-import org.reactome.release.download_directory.GenerateGOAnnotationFile.CreateGOAFile;
+import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOAFile;
 
 public class Main {
 	private static final Logger logger = LogManager.getLogger();

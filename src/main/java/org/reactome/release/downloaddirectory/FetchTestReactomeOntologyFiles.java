@@ -1,4 +1,4 @@
-package org.reactome.release.download_directory;
+package org.reactome.release.downloaddirectory;
 
 import java.io.BufferedReader;
 import java.io.File;

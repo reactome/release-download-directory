@@ -1,4 +1,4 @@
-package org.reactome.release.download_directory.GenerateGOAnnotationFile;
+package org.reactome.release.downloaddirectory.GenerateGOAnnotationFile;
 
 public class GOAGeneratorConstants {
 

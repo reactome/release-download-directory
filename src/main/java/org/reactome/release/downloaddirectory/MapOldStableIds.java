@@ -1,4 +1,4 @@
-package org.reactome.release.download_directory;
+package org.reactome.release.downloaddirectory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
