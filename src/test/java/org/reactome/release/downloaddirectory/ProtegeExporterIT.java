@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 @SuppressWarnings("static-method")
-public class TestProtegeExporter
+public class ProtegeExporterIT
 {
 	private static final String RELEASE_NUM = "70";
 	private static String host;
@@ -47,10 +47,10 @@ public class TestProtegeExporter
 		try(FileInputStream fis = new FileInputStream("src/test/resources/db.properties"))
 		{
 			props.load(fis);
-			TestProtegeExporter.host = props.getProperty("db.host");
-			TestProtegeExporter.name = props.getProperty("db.name");
-			TestProtegeExporter.user = props.getProperty("db.user");
-			TestProtegeExporter.password = props.getProperty("db.password");
+			ProtegeExporterIT.host = props.getProperty("db.host");
+			ProtegeExporterIT.name = props.getProperty("db.name");
+			ProtegeExporterIT.user = props.getProperty("db.user");
+			ProtegeExporterIT.password = props.getProperty("db.password");
 			String release = RELEASE_NUM;
 			Files.createDirectories(Paths.get(release+"/"));
 		}
@@ -59,7 +59,7 @@ public class TestProtegeExporter
 	@Test
 	public void testProtegeExporterIT() throws SQLException, IOException
 	{
-		MySQLAdaptor adaptor = new MySQLAdaptor(TestProtegeExporter.host, TestProtegeExporter.name, TestProtegeExporter.user, TestProtegeExporter.password);
+		MySQLAdaptor adaptor = new MySQLAdaptor(ProtegeExporterIT.host, ProtegeExporterIT.name, ProtegeExporterIT.user, ProtegeExporterIT.password);
 
 		ProtegeExporter testExporter = new ProtegeExporter();
 
