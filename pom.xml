@@ -35,6 +35,11 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!--
+		integration tests run by default when running the command "mvn verify"; can be overridden using the option
+		"-DskipITs=true"
+		-->
+		<skipITs>false</skipITs>
 
 		<spring.version>4.2.4.RELEASE</spring.version>
 		<biopax.version>5.1.0</biopax.version>
@@ -74,7 +79,7 @@
 			<artifactId>log4j-core</artifactId>
 			<version>2.11.0</version>
 		</dependency>
-		<!-- release-common-lib must be before biopax dependencies to avoid conflict between libraries -->
+		<!-- release-common-lib must be before BioPAX dependencies to avoid conflict between libraries -->
 		<dependency>
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
@@ -213,21 +218,24 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.19.1</version>
+				<version>2.22.2</version>
 				<executions>
 					<execution>
+						<id>integration-tests</id>
 						<goals>
 							<goal>integration-test</goal>
 							<goal>verify</goal>
 						</goals>
+						<configuration>
+							<!--
+							Default value is defined in the <properties> section and will be applied to integration
+							tests when running the command "mvn verify", but can be overwritten to either skip
+							or run integration tests with the command "mvn verify -DskipITs=[true|false]"
+							-->
+							<skipTests>${skipITs}</skipTests>
+						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
 			</plugin>
 
 			<!--
