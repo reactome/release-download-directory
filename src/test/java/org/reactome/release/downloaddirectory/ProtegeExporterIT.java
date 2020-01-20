@@ -53,6 +53,14 @@ public class ProtegeExporterIT
 		ProtegeExporterIT.releaseDir = props.getProperty("release.dir");
 		ProtegeExporterIT.perlLibPaths = getPerlLibPathArguments(props.getProperty("perllib.paths"));
 
+		if (releaseDir == null || releaseDir.isEmpty())
+		{
+			throw new RuntimeException(
+				"release.dir must have a value, for the path of the Release directory " +
+				"(https://github.com/reactome/Release/), set in src/test/resources/it.properties"
+			);
+		}
+
 		Files.createDirectories(Paths.get(RELEASE_NUM));
 	}
 
