@@ -168,6 +168,9 @@ public class ProtegeExporter
 								{
 									Files.createDirectories(Paths.get(PROTEGE_FILES_DIR));
 									// Move the file to the protege_files, overwrite existing.
+									Files.delete(Paths.get("/tmp", fileName + ".pins"));
+									Files.delete(Paths.get("/tmp", fileName + ".pont"));
+									Files.delete(Paths.get("/tmp", fileName + ".pprj"));
 									Files.move(Paths.get("/tmp/"+fileName+".tar.gz"), Paths.get(PROTEGE_FILES_DIR+fileName+".tar.gz"), StandardCopyOption.REPLACE_EXISTING);
 								}
 								else
