@@ -7,3 +7,8 @@ target/
 # Ignore IntelliJ files
 .idea/
 download-directory.iml
+
+# Ignore integration test files
+protege_files.tar
+protege_files/
+src/main/resources/run_protege_exporter.log
