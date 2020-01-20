@@ -272,7 +272,9 @@ public class ProtegeExporter
 		processBuilder.command(cmdArgs)
 					.directory(Paths.get(this.pathToWrapperScript).toFile())
 					.inheritIO();
-		logger.info("Command is: `{}`", String.join(" ", processBuilder.command()));
+		logger.info("Command is: `{}`",
+			String.join(" ", processBuilder.command()).replace("db_pass=" + dba.getDBPwd(), "db_pass=********")
+		);
 		return processBuilder;
 	}
 
