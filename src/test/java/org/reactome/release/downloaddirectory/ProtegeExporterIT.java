@@ -110,8 +110,12 @@ public class ProtegeExporterIT
 
 		if (cleanupAfterTest())
 		{
-			System.out.println("You specified \"cleanup\", so " + pathToFinalTar + " will now be removed.");
+			System.out.println(
+				"You specified \"cleanup\", so the directories \"" + RELEASE_NUM + "\" and \"" +
+				ProtegeExporter.PROTEGE_FILES_DIR + "\" will now be removed."
+			);
 			FileUtils.deleteDirectory(Paths.get(RELEASE_NUM).toFile());
+			FileUtils.deleteDirectory(Paths.get(ProtegeExporter.PROTEGE_FILES_DIR).toFile());
 		}
 	}
 
