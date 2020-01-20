@@ -42,7 +42,8 @@ public class ProtegeExporter
 	// The code in GKB::WebUtils always writes protege files to /tmp/ and it doesn't look like that is configurable,
 	// so we'll work in /tmp as well.
 	private static final String PROTEGE_ARCHIVE_PATH = "/tmp/protege_files.tar";
-	private static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar", "/");
+	static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar", "/");
+
 	private static final Logger logger = LogManager.getLogger();
 	private String releaseDirectory;
 	private int parallelism = ForkJoinPool.getCommonPoolParallelism();
