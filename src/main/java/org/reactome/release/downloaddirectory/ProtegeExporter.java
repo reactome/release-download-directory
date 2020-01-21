@@ -124,8 +124,10 @@ public class ProtegeExporter
 				// know they could still be running.
 				Runtime.getRuntime().addShutdownHook(new Thread( () ->
 				{
-					logger.info("Shutting down thread pool. IF this program was terminated prematurely, there might still be orphan Perl processes running."
-								+ " Check to see if any are still running, and kill them if necessary.");
+					logger.info("Shutting down thread pool.");
+					logger.warn("IF this program was terminated prematurely, there might still be orphan Perl " +
+						"processes running. Check to see if any are still running, and kill them if necessary."
+					);
 					pool.shutdownNow();
 				}));
 				// Filtering is in effect IF the set has something in it.
