@@ -42,7 +42,8 @@ public class ProtegeExporter
 	// The code in GKB::WebUtils always writes protege files to /tmp/ and it doesn't look like that is configurable,
 	// so we'll work in /tmp as well.
 	private static final String PROTEGE_ARCHIVE_PATH = "/tmp/protege_files.tar";
-	private static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar", "/");
+	static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar", "/");
+
 	private static final Logger logger = LogManager.getLogger();
 	private String releaseDirectory;
 	private int parallelism = ForkJoinPool.getCommonPoolParallelism();
@@ -123,8 +124,10 @@ public class ProtegeExporter
 				// know they could still be running.
 				Runtime.getRuntime().addShutdownHook(new Thread( () ->
 				{
-					logger.info("Shutting down thread pool. IF this program was terminated prematurely, there might still be orphan Perl processe runing."
-								+ " Check to see if any are still running, and kill them if necssary.");
+					logger.info("Shutting down thread pool.");
+					logger.warn("IF this program was terminated prematurely, there might still be orphan Perl " +
+						"processes running. Check to see if any are still running, and kill them if necessary."
+					);
 					pool.shutdownNow();
 				}));
 				// Filtering is in effect IF the set has something in it.
@@ -153,7 +156,7 @@ public class ProtegeExporter
 							// include a normalized display_name in the output to make it easier to identify the contents of an archive.
 							String normalizedDisplayName = pathway.getDisplayName().toLowerCase().replace(" ", "_").replace("-", "_").replace("(", "").replace(")", "");
 							String fileName = "Reactome_pathway_" + pathway.getDBID() + "_" + normalizedDisplayName;
-							ProcessBuilder processBuilder = createProcessBuilder(pathway.getDBID().toString(), fileName);
+							ProcessBuilder processBuilder = createProcessBuilder(pathway.getDBID().toString(), fileName, dba);
 							Process process = null;
 							try
 							{
@@ -165,8 +168,11 @@ public class ProtegeExporter
 								logger.info("Finished generating protege files for {}; Elapsed time: {}; Exit code is {}", pathway.toString(), Duration.between(exportStart, exportEnd), exitCode);
 								if (exitCode == 0)
 								{
-									Files.createDirectories(Paths.get("/tmp/protege_files"));
+									Files.createDirectories(Paths.get(PROTEGE_FILES_DIR));
 									// Move the file to the protege_files, overwrite existing.
+									Files.delete(Paths.get("/tmp", fileName + ".pins"));
+									Files.delete(Paths.get("/tmp", fileName + ".pont"));
+									Files.delete(Paths.get("/tmp", fileName + ".pprj"));
 									Files.move(Paths.get("/tmp/"+fileName+".tar.gz"), Paths.get(PROTEGE_FILES_DIR+fileName+".tar.gz"), StandardCopyOption.REPLACE_EXISTING);
 								}
 								else
@@ -206,7 +212,7 @@ public class ProtegeExporter
 	 * Determine if a pathway should be processed. A pathway should be processed IF: <ul>
 	 * <li>An ID filter has been specified and the pathway's ID is in that set.</li>
 	 * <li>A species filter has been specified and the pathway's species is in that set.</li></ul>
-	 * If an ID filter has NOT been specified, then no filtering by ID will occurr. If a species filter has NOT be specified, then no filtering by species will occur.
+	 * If an ID filter has NOT been specified, then no filtering by ID will occur. If a species filter has NOT be specified, then no filtering by species will occur.
 	 * If NO filters are specified, then this function will return true for any pathway.
 	 * @param idFilterInEffect
 	 * @param speciesFilterInEffect
@@ -247,26 +253,35 @@ public class ProtegeExporter
 	 * Create a process builder to run the protege export process.
 	 * @param pathwayId - the DB_ID of the Pathway to export.
 	 * @param fileName - This string will be used to name the output archive file that is created by protege export.
+	 * @param dba - the database from which the pathway originates
 	 * @return A populated ProcessBuilder that is ready to use.
 	 */
-	private ProcessBuilder createProcessBuilder(String pathwayId, String fileName)
+	private ProcessBuilder createProcessBuilder(String pathwayId, String fileName, MySQLAdaptor dba)
 	{
 		List<String> cmdArgs = new ArrayList<>();
 		cmdArgs.add("perl");
 		cmdArgs.addAll(this.extraIncludes);
-		cmdArgs.addAll(Arrays.asList("-I"+this.releaseDirectory+"/modules", "run_protege_exporter.pl", pathwayId, fileName));
+		cmdArgs.addAll(Arrays.asList("-I"+this.releaseDirectory+"/modules", "run_protege_exporter.pl",
+			"id=" + pathwayId,
+			"file_name=" + fileName,
+			"DB=" + dba.getDBName(),
+			"db_user=" + dba.getDBUser(),
+			"db_pass=" + dba.getDBPwd(),
+			"db_host=" + dba.getDBHost()
+		));
 		// Build the process.
 		ProcessBuilder processBuilder = new ProcessBuilder();
 		processBuilder.command(cmdArgs)
 					.directory(Paths.get(this.pathToWrapperScript).toFile())
 					.inheritIO();
-		logger.info("Command is: `{}`", String.join(" ", processBuilder.command()));
+		logger.info("Command is: `{}`",
+			String.join(" ", processBuilder.command()).replace("db_pass=" + dba.getDBPwd(), "db_pass=********")
+		);
 		return processBuilder;
 	}
 
 	/**
 	 * TARs the protege files.
-	 * @param pathToProtegeFiles The path to where the protege archive files are. They need to be collected into a single archive.
 	 */
 	private void tarProtegeFiles()
 	{
