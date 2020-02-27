@@ -7,29 +7,26 @@ import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.sql.*;
 import java.util.*;
 
 public class MapOldStableIds {
 	private static final Logger logger = LogManager.getLogger();
-	private static final String filename = "reactome_stable_ids.txt";
-
 	/**
 	 * This DownloadDirectory module produces a mapping file of current Reactome stable identifiers to old Reactome stable identifiers.
-	 * This stable identifiers denote specific instances in Reactome (Pathway, Reaction, Protein) and can be used to access their pages externally.
+	 * These stable identifiers denote specific instances in Reactome (Pathway, Reaction, Protein) and can be used to access their pages externally.
 	 * After release '53', Reactome switched its stable identifier format from 'REACT_XXXXX' to 'R-ABC-XXXXXX'. This new format
 	 * contained a bit more information ('ABC' denotes the species) while also mitigating a database corruption issue that sometimes caused
 	 * multiple stable identifiers to be mapped to a single instance.
 	 * @param dba MySQLAdaptor - Connects to release_current relational database.
 	 * @param releaseNumber String - Current release number, used for storing files in release-specific location.
-	 * @throws Exception - Can be an IOException (Moving/Writing issues), SQLException (Connecting/Querying/Interacting with stable_identifiers database),
-	 * ClassNotFoundException (if MySQL driver class isn't found) or a general Exception thrown from the MySQLAdaptor class.
+	 * @throws Exception - Thrown if there are issues with the MySQLAdaptor and GKInstance classes.
+	 * @throws IOException - Thrown if unable to create or write to file.
+	 * @throws SQLException - Thrown if there are issues connecting/querying/interacting with the stable_identifiers database.
+	 * @throws ClassNotFoundException - Thrown if unable to find or crete the MySQL driver.
 	 */
-	public static void execute(MySQLAdaptor dba, String releaseNumber) throws Exception {
+	public static void execute(MySQLAdaptor dba, String releaseNumber) throws Exception, IOException, SQLException, ClassNotFoundException {
 
 		logger.info("Running MapOldStableIds step");
 		ResultSet stableIdResults = retrieveAllStableIdentifiers(dba);
@@ -91,10 +88,6 @@ public class MapOldStableIds {
 		logger.info("Retrieving current stable identifiers from " + dba.getDBName());
 		Set<String> currentStableIdentifiers = getCurrentStableIdentifiers(dba);
 
-		// Write to file
-		Files.deleteIfExists(Paths.get(filename));
-		Files.createFile(Paths.get(filename));
-
 		writeMappingsToFile(releaseNumber, stableIdsToOldIdsMappings, currentStableIdentifiers);
 
 		logger.info("MapOldStableIds finished");
@@ -121,7 +114,7 @@ public class MapOldStableIds {
 	 * @param currentStableIdentifiers Set<String> - Set of all StableIdentifiers currently in database.
 	 * @param primaryId String - Primary StableIdentifier that maps to secondaryIds.
 	 * @param secondaryIds List<String> - All StableIdentifiers (old and new formats) that map to the primary stable identifier.
-	 * @return Boolean, indicating it is a currently used StableIdentifier with secondary mappings.
+	 * @return boolean, indicating it is a currently used StableIdentifier with secondary mappings.
 	 */
 	private static boolean currentStableIdentifierWithMapping(Set<String> currentStableIdentifiers, String primaryId, List<String> secondaryIds) {
 		return currentStableIdentifiers.contains(primaryId) && !secondaryIds.isEmpty();
@@ -168,11 +161,12 @@ public class MapOldStableIds {
 	 * @param stableIdsToOldIdsMappings List<List<Object>> - List of current stable identifier mappings to older mappings.
 	 * The interior List<Object> is of the form [String, List<String>].
 	 * @param currentStableIdentifiers Set<String>, all StableIdentifiers in current release database.
-	 * @throws IOException - Thrown if there are issues with creating or moving mapping file.
+	 * @throws IOException - Thrown if there are issues with creating mapping file.
 	 */
 	private static void writeMappingsToFile(String releaseNumber, List<List<Object>> stableIdsToOldIdsMappings, Set<String> currentStableIdentifiers) throws IOException {
+		Path oldStableIdsMappingFilePath = Paths.get(releaseNumber, "reactome_stable_ids.txt");
 		String header = "# Reactome stable IDs for release " + releaseNumber + "\n" + "Stable_ID\told_identifier(s)\n";
-		Files.write(Paths.get(filename), header.getBytes(), StandardOpenOption.APPEND);
+		Files.write(oldStableIdsMappingFilePath, header.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 		for (List<Object> stableIdsArray : stableIdsToOldIdsMappings)
 		{
 			String primaryId = (String) stableIdsArray.get(0);
@@ -180,10 +174,8 @@ public class MapOldStableIds {
 			List<String> secondaryIds = (ArrayList<String>) stableIdsArray.get(1);
 			if (currentStableIdentifierWithMapping(currentStableIdentifiers, primaryId, secondaryIds)) {
 				String line = primaryId + "\t" + String.join(",", secondaryIds) + "\n";
-				Files.write(Paths.get(filename), line.getBytes(), StandardOpenOption.APPEND);
+				Files.write(oldStableIdsMappingFilePath, line.getBytes(), StandardOpenOption.APPEND);
 			}
 		}
-		String outpathName = releaseNumber + "/" + filename;
-		Files.move(Paths.get(filename), Paths.get(outpathName), StandardCopyOption.REPLACE_EXISTING);
 	}
 }
