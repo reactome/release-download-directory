@@ -30,9 +30,7 @@ pipeline {
 		stage('Setup: Install Pathway Exchange artifact'){
 			steps{
 				script{
-					dir('download-directory'){
-						sh "./build_pathway_exchange.sh"
-					}
+					sh "./build_pathway_exchange.sh"
 				}
 			}
 		}
@@ -41,11 +39,9 @@ pipeline {
 		stage('Setup: Build DownloadDirectory archive'){
 			steps{
 				script{
-					dir('download-directory'){
-						sh "mvn clean package -DskipTests"
-						sh "rm -rf download-directory"
-						sh "unzip -o target/download-directory-distr.zip"
-					}
+					sh "mvn clean package -DskipTests"
+					sh "rm -rf download-directory"
+					sh "unzip -o target/download-directory-distr.zip"
 				}
 			}
 		}
@@ -54,11 +50,9 @@ pipeline {
 		stage('Main: Run DownloadDirectory'){
 			steps{
 				script{
-					dir('download-directory'){
-						withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-							withCredentials([file(credentialsId: 'stepsToRun', variable: 'StepsToRun')]){
-								sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile $StepsToRun"
-							}
+					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
+						withCredentials([file(credentialsId: 'stepsToRun', variable: 'StepsToRun')]){
+							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile $StepsToRun"
 						}
 					}
 				}
@@ -68,12 +62,10 @@ pipeline {
 		stage('Post: Archive logs and validation files'){
 			steps{
 				script{
-					dir('download-directory'){
-						sh "mkdir -p archive/${currentRelease}/logs"
-						sh "mv --backup=numbered biopax*validator.zip archive/${currentRelease}/"
-						sh "gzip logs/*"
-						sh "mv logs/* archive/${currentRelease}/logs/"
-					}
+					sh "mkdir -p archive/${currentRelease}/logs"
+					sh "mv --backup=numbered biopax*validator.zip archive/${currentRelease}/"
+					sh "gzip logs/*"
+					sh "mv logs/* archive/${currentRelease}/logs/"
 				}
 			}
 		}
