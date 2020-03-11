@@ -8,6 +8,7 @@ pipeline {
 
 	stages {
 		// This stage checks that an upstream project, AddLinks-Insertion, was run successfully for its last build.
+		/*
 		stage('Check AddLinks-Insertion build succeeded'){
 			steps{
 				script{
@@ -26,6 +27,7 @@ pipeline {
 				}
 			}
 		}
+		*/
 		// This stage clones, builds, and install the Pathway-Exchange dependency needed for DownloadDirectory.
 		stage('Setup: Install Pathway Exchange artifact'){
 			steps{
