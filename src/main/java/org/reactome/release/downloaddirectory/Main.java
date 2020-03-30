@@ -130,7 +130,7 @@ public class Main {
 			// This step iterates through all StableIdentifiers and maps them to the old Reactome ID in 'REACT_#####' format. Human instances are displayed first.
 			// Output: reactome_stable_ids.txt
 			try {
-				MapOldStableIds.execute(username, password, host, releaseNumber);
+				MapOldStableIds.execute(dbAdaptor, releaseNumber);
 			} catch (Exception e) {
 				failedSteps.add("MapOldStableIds");
 				e.printStackTrace();
