@@ -17,6 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
+import org.gk.pro.ProExporter;
 import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOAFile;
 
 public class Main {
@@ -188,6 +189,14 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
+		if (stepsToRun.contains("ProExporter")) {
+		    try {
+		    	ProExporter.main(new String[]{"proExport.prop"});
+            } catch (Exception e) {
+		    	failedSteps.add("ProExporter");
+		    	e.printStackTrace();
+            }
+        }
 
 		// Move files to downloadDirectory release folder
 		/*
