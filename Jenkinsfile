@@ -52,7 +52,8 @@ pipeline {
 				script{
 //					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
 //						withCredentials([file(credentialsId: 'stepsToRun', variable: 'StepsToRun')]){
-							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile $StepsToRun"
+							//sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile $StepsToRun"
+							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar"
 //						}
 //					}
 				}
