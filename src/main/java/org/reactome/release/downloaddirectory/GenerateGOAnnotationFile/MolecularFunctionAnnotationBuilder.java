@@ -21,18 +21,21 @@ public class MolecularFunctionAnnotationBuilder {
      */
     public static List<String> processMolecularFunctions(GKInstance reactionInst) throws Exception {
         List<String> goaLines = new ArrayList<>();
-        Collection<GKInstance> catalystInstances = reactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity);
-        for (GKInstance catalystInst : catalystInstances) {
-            // Check that catalyst instance has no disqualifying attributes.
-            boolean validCatalyst = isValidMolecularFunctionCatalyst(catalystInst);
-            if (validCatalyst) {
-                // For MF annotations, gets all proteins from the ActiveUnit if it exists or from the PhysicalEntity if not.
-                GKInstance activeUnitInst = (GKInstance) catalystInst.getAttributeValue(ReactomeJavaConstants.activeUnit);
-                GKInstance entityInst = activeUnitInst == null ? (GKInstance) catalystInst.getAttributeValue(ReactomeJavaConstants.physicalEntity) : activeUnitInst;
-                Set<GKInstance> proteinInstances = getMolecularFunctionProteins(entityInst);
-                goaLines.addAll(processProteins(proteinInstances, reactionInst, catalystInst));
-            } else {
-                logger.info("Invalid catalyst, skipping GO annotation");
+        Collection<GKInstance> catalystReferenceInstances = reactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivityReference);
+        for (GKInstance catalystReferenceInst : catalystReferenceInstances) {
+            Collection<GKInstance> catalystInstances = catalystReferenceInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity);
+            for (GKInstance catalystInst : catalystInstances) {
+                // Check that catalyst instance has no disqualifying attributes.
+                boolean validCatalyst = isValidMolecularFunctionCatalyst(catalystInst);
+                if (validCatalyst) {
+                    // For MF annotations, gets all proteins from the ActiveUnit if it exists or from the PhysicalEntity if not.
+                    GKInstance activeUnitInst = (GKInstance) catalystInst.getAttributeValue(ReactomeJavaConstants.activeUnit);
+                    GKInstance entityInst = activeUnitInst == null ? (GKInstance) catalystInst.getAttributeValue(ReactomeJavaConstants.physicalEntity) : activeUnitInst;
+                    Set<GKInstance> proteinInstances = getMolecularFunctionProteins(entityInst);
+                    goaLines.addAll(processProteins(proteinInstances, reactionInst, catalystInst, catalystReferenceInst));
+                } else {
+                    logger.info("Invalid catalyst, skipping GO annotation");
+                }
             }
         }
         return goaLines;
@@ -118,7 +121,7 @@ public class MolecularFunctionAnnotationBuilder {
      * @param catalystInst -- GKInstance, catalyst instance from reaction.
      * @throws Exception -- MySQLAdaptor exception.
      */
-    private static List<String> processProteins(Set<GKInstance> proteinInstances, GKInstance reactionInst, GKInstance catalystInst) throws Exception {
+    private static List<String> processProteins(Set<GKInstance> proteinInstances, GKInstance reactionInst, GKInstance catalystInst, GKInstance catalystReferenceInst) throws Exception {
         List<String> goaLines = new ArrayList<>();
         for (GKInstance proteinInst : proteinInstances) {
             GKInstance referenceEntityInst = (GKInstance) proteinInst.getAttributeValue(ReactomeJavaConstants.referenceEntity);
@@ -129,7 +132,7 @@ public class MolecularFunctionAnnotationBuilder {
                 String taxonIdentifier = ((GKInstance) speciesInst.getAttributeValue(ReactomeJavaConstants.crossReference)).getAttributeValue(ReactomeJavaConstants.identifier).toString();
                 if (!GOAGeneratorUtilities.isExcludedMicrobialSpecies(taxonIdentifier)) {
                     if (catalystInst.getAttributeValue(ReactomeJavaConstants.activity) != null) {
-                        goaLines.addAll(generateGOMolecularFunctionLine(catalystInst, referenceEntityInst, taxonIdentifier, reactionInst));
+                        goaLines.addAll(generateGOMolecularFunctionLine(catalystInst, referenceEntityInst, taxonIdentifier, reactionInst, catalystReferenceInst));
                     } else {
                         logger.info("Catalyst has no GO_MolecularFunction attribute, skipping GO annotation");
                     }
@@ -153,10 +156,10 @@ public class MolecularFunctionAnnotationBuilder {
      * @param reactionInst -- GKInstance, parent reaction instance that protein/catalyst comes from.
      * @throws Exception -- MySQLAdaptor exception.
      */
-    private static List<String> generateGOMolecularFunctionLine(GKInstance catalystInst, GKInstance referenceEntityInst, String taxonIdentifier, GKInstance reactionInst) throws Exception {
+    private static List<String> generateGOMolecularFunctionLine(GKInstance catalystInst, GKInstance referenceEntityInst, String taxonIdentifier, GKInstance reactionInst, GKInstance catalystReferenceInst) throws Exception {
         List<String> goaLines = new ArrayList<>();
         List<String> pubMedIdentifiers = new ArrayList<>();
-        for (GKInstance literatureReferenceInst : (Collection<GKInstance>) catalystInst.getAttributeValuesList(ReactomeJavaConstants.literatureReference)) {
+        for (GKInstance literatureReferenceInst : (Collection<GKInstance>) catalystReferenceInst.getAttributeValuesList(ReactomeJavaConstants.literatureReference)) {
             pubMedIdentifiers.add(PUBMED_IDENTIFIER_PREFIX + literatureReferenceInst.getAttributeValue(ReactomeJavaConstants.pubMedIdentifier).toString());
         }
         GKInstance activityInst = (GKInstance) catalystInst.getAttributeValue(ReactomeJavaConstants.activity);
