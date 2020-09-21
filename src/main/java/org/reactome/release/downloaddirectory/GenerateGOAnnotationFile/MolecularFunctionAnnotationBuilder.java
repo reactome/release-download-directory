@@ -21,6 +21,7 @@ public class MolecularFunctionAnnotationBuilder {
      */
     public static List<String> processMolecularFunctions(GKInstance reactionInst) throws Exception {
         List<String> goaLines = new ArrayList<>();
+        // As of v74 (September 2020), CatalystActivity literatureReferences are found in a ReactionlikeEvent's 'catalystActivityReference' attribute, not on the CA instance.
         Collection<GKInstance> catalystReferenceInstances = reactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivityReference);
         for (GKInstance catalystReferenceInst : catalystReferenceInstances) {
             Collection<GKInstance> catalystInstances = catalystReferenceInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity);
@@ -119,6 +120,7 @@ public class MolecularFunctionAnnotationBuilder {
      * @param proteinInstances -- Set of GKInstances, EWAS' from the ActiveUnit/PhysicalEntity of the catalyst.
      * @param reactionInst -- GKInstance, parent reaction the catalyst/proteins come from.
      * @param catalystInst -- GKInstance, catalyst instance from reaction.
+     * @param catalystReferenceInst -- GKInstance, CatalystActivityReference instance from the incoming reactionInst's 'catalystActivityReference' slot.
      * @throws Exception -- MySQLAdaptor exception.
      */
     private static List<String> processProteins(Set<GKInstance> proteinInstances, GKInstance reactionInst, GKInstance catalystInst, GKInstance catalystReferenceInst) throws Exception {
@@ -154,11 +156,13 @@ public class MolecularFunctionAnnotationBuilder {
      * @param referenceEntityInst -- GKInstance, ReferenceEntity instance from protein instance.
      * @param taxonIdentifier -- String, CrossReference ID of protein's species.
      * @param reactionInst -- GKInstance, parent reaction instance that protein/catalyst comes from.
+     * @param catalystReferenceInst -- GKInstance, CatalystActivityReference instance from the incoming reactionInst's 'catalystActivityReference' slot.
      * @throws Exception -- MySQLAdaptor exception.
      */
     private static List<String> generateGOMolecularFunctionLine(GKInstance catalystInst, GKInstance referenceEntityInst, String taxonIdentifier, GKInstance reactionInst, GKInstance catalystReferenceInst) throws Exception {
         List<String> goaLines = new ArrayList<>();
         List<String> pubMedIdentifiers = new ArrayList<>();
+        // Literature references are drawn from a CatalystActivityReference instance associated with the incoming reactionInst
         for (GKInstance literatureReferenceInst : (Collection<GKInstance>) catalystReferenceInst.getAttributeValuesList(ReactomeJavaConstants.literatureReference)) {
             pubMedIdentifiers.add(PUBMED_IDENTIFIER_PREFIX + literatureReferenceInst.getAttributeValue(ReactomeJavaConstants.pubMedIdentifier).toString());
         }
