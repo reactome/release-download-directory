@@ -24,6 +24,7 @@ public class MolecularFunctionAnnotationBuilder {
         // As of v74 (September 2020), CatalystActivity literatureReferences are found in a ReactionlikeEvent's 'catalystActivityReference' attribute, not on the CA instance.
         Collection<GKInstance> catalystReferenceInstances = reactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivityReference);
         for (GKInstance catalystReferenceInst : catalystReferenceInstances) {
+            // CatalystActivity instances are drawn from the CatalystActivityReference
             Collection<GKInstance> catalystInstances = catalystReferenceInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity);
             for (GKInstance catalystInst : catalystInstances) {
                 // Check that catalyst instance has no disqualifying attributes.
