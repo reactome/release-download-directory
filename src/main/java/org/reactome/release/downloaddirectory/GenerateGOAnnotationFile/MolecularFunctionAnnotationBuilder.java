@@ -25,8 +25,8 @@ public class MolecularFunctionAnnotationBuilder {
         Collection<GKInstance> catalystReferenceInstances = reactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivityReference);
         for (GKInstance catalystReferenceInst : catalystReferenceInstances) {
             // CatalystActivity instances are drawn from the CatalystActivityReference
-            Collection<GKInstance> catalystInstances = catalystReferenceInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity);
-            for (GKInstance catalystInst : catalystInstances) {
+            GKInstance catalystInst = (GKInstance) catalystReferenceInst.getAttributeValue(ReactomeJavaConstants.catalystActivity);
+            if (catalystInst != null) {
                 // Check that catalyst instance has no disqualifying attributes.
                 boolean validCatalyst = isValidMolecularFunctionCatalyst(catalystInst);
                 if (validCatalyst) {
