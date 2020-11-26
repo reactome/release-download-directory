@@ -181,6 +181,7 @@ public class Main {
 		}
 		if (stepsToRun.contains("ProExporter")) {
 			try {
+				logger.info("Starting ProExporter file creation...");
 				ProExporter.main(new String[]{"proExport.prop"});
             		} catch (Exception e) {
 		    		failedSteps.add("ProExporter");
