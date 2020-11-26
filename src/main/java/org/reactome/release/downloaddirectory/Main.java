@@ -148,6 +148,15 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
+		if (stepsToRun.contains("protegeexporter")) {
+			try {
+				ProtegeExporter protegeExporter = new ProtegeExporter(props, releaseDirAbsolute, releaseNumber);
+				protegeExporter.execute(dbAdaptor);
+			} catch (Exception e) {
+				failedSteps.add("protegeexporter");
+				e.printStackTrace();
+			}
+		}
 		if (stepsToRun.contains("HumanPathwaysWithDiagrams"))
 		{
 			logger.info("Generating HumanPathwaysWithDiagrams file");
@@ -169,19 +178,10 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		if (stepsToRun.contains("ProExporter")) {
-			try {
-				logger.info("Starting ProExporter file creation...");
-				ProExporter.main(new String[]{"proExport.prop"});
-            		} catch (Exception e) {
-		    		failedSteps.add("ProExporter");
-		    		e.printStackTrace();
-            		}
-        	}
-// 		if (failedSteps.size() > 0) {
-// 			String failedStepsString = StringUtils.join(failedSteps, ", ");
-// 			logger.warn("Errors were reported in the following step(s): " + failedStepsString + "\n");
-// 		}
+		if (failedSteps.size() > 0) {
+			String failedStepsString = StringUtils.join(failedSteps, ", ");
+			logger.warn("Errors were reported in the following step(s): " + failedStepsString + "\n");
+		}
 		logger.info("Finished DownloadDirectory");
 	}
 }
