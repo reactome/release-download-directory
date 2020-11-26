@@ -13,7 +13,7 @@ pipeline {
 		stage('Check AddLinks-Insertion build succeeded'){
 			steps{
 				script{
-
+                    utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/AddLinks-Insertion")
 				}
 			}
 		}
@@ -42,23 +42,36 @@ pipeline {
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"						}
+							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
 					}
 				}
 			}
 		}
-		/*
+		stage('Post: Create archive and move files to download folder'){
+		    steps{
+		        script{
+		            def releaseVersion = utils.getReleaseVersion()
+		            def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
+		            dir("${releaseVersion}"){
+		                sh "tar -zcvf ${downloadDirectoryArchive} *"
+		            }
+		            sh "mv ${releaseVersion}/${downloadDirectoryArchive} ."
+		            sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
+		            sh "rm -r ${releaseVersion}*"
+		        }
+		    }
+		}
 		// This stage archives all logs and other outputs produced by DownloadDirectory.
 		stage('Post: Archive logs and validation files'){
 			steps{
 				script{
-					sh "mkdir -p archive/${currentRelease}/logs"
-					sh "mv --backup=numbered biopax*validator.zip archive/${currentRelease}/"
-					sh "gzip logs/*"
-					sh "mv logs/* archive/${currentRelease}/logs/"
+				        def releaseVersion = utils.getReleaseVersion()
+					def dataFiles = ["download-directory-v${releaseVersion}.tgz", "biopax_validator.zip", "biopax2_validator.zip"]
+					def logFiles = []
+					def foldersToDelete = ["/tmp/protege_files/"]
+				    	utils.cleanUpAndArchiveBuildFiles("download_directory", dataFiles, logFiles, foldersToDelete)
 				}
 			}
 		}
-		*/
 	}
 }
