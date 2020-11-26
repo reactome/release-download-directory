@@ -17,7 +17,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
-import org.gk.pro.ProExporter;
 import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOAFile;
 
 public class Main {
@@ -146,15 +145,6 @@ public class Main {
 
 			} catch (Exception e) {
 				failedSteps.add("GenerateGOAnnotationFile");
-				e.printStackTrace();
-			}
-		}
-		if (stepsToRun.contains("protegeexporter")) {
-			try {
-				ProtegeExporter protegeExporter = new ProtegeExporter(props, releaseDirAbsolute, releaseNumber);
-				protegeExporter.execute(dbAdaptor);
-			} catch (Exception e) {
-				failedSteps.add("protegeexporter");
 				e.printStackTrace();
 			}
 		}
