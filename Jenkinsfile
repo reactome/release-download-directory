@@ -1,8 +1,10 @@
-import groovy.json.JsonSlurper
 // This Jenkinsfile is used by Jenkins to run the DownloadDirectory step of Reactome's release.
 // It requires that the AddLinks-Insertion step has been run successfully before it can be run.
-def currentRelease
-def previousRelease
+
+import org.reactome.release.jenkins.utilities.Utilities
+
+// Shared library maintained at 'release-jenkins-utils' repository.
+def utils = new Utilities()
 pipeline {
 	agent any
 
@@ -11,18 +13,7 @@ pipeline {
 		stage('Check AddLinks-Insertion build succeeded'){
 			steps{
 				script{
-					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
-					previousRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1].toInteger() - 1;
-					// This queries the Jenkins API to confirm that the most recent build of AddLinks-Insertion was successful.
-					def addLinksInsertionStatusUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/$currentRelease/job/Relational-Database-Updates/job/AddLinks-Insertion/lastBuild/api/json"
-					if (addLinksInsertionStatusUrl.getStatus() == 404) {
-						error("AddLinks-Insertion has not yet been run. Please complete a successful build.")
-					} else {
-						def addLinksInsertionJson = new JsonSlurper().parseText(addLinksInsertionStatusUrl.getContent())
-						if(addLinksInsertionJson['result'] != "SUCCESS"){
-							error("Most recent AddLinks-Insertion build status: " + addLinksInsertionJson['result'] + ". Please complete a successful build.")
-						}
-					}
+
 				}
 			}
 		}
@@ -51,14 +42,12 @@ pipeline {
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-//						withCredentials([file(credentialsId: 'stepsToRun', variable: 'StepsToRun')]){
-							//sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile $StepsToRun"
-							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
-//						}
+							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"						}
 					}
 				}
 			}
 		}
+		/*
 		// This stage archives all logs and other outputs produced by DownloadDirectory.
 		stage('Post: Archive logs and validation files'){
 			steps{
@@ -70,5 +59,6 @@ pipeline {
 				}
 			}
 		}
+		*/
 	}
 }
