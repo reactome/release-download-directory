@@ -1,28 +1,20 @@
-import groovy.json.JsonSlurper
-// This Jenkinsfile is used by Jenkins to run the DownloadDirectory step of Reactome's release.
-// It requires that the AddLinks-Insertion step has been run successfully before it can be run.
-def currentRelease
-def previousRelease
+// This Jenkinsfile is used by Jenkins to run the 'DownloadDirectory' step of Reactome's release.
+// It requires that the 'BioModels' step has been run successfully before it can be run.
+
+import org.reactome.release.jenkins.utilities.Utilities
+
+// Shared library maintained at 'release-jenkins-utils' repository.
+def utils = new Utilities()
+
 pipeline {
 	agent any
 
 	stages {
-		// This stage checks that an upstream project, AddLinks-Insertion, was run successfully for its last build.
+		// This stage checks that an upstream project 'BioModels' was run successfully for its last build.
 		stage('Check AddLinks-Insertion build succeeded'){
 			steps{
 				script{
-					currentRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1];
-					previousRelease = (pwd() =~ /Releases\/(\d+)\//)[0][1].toInteger() - 1;
-					// This queries the Jenkins API to confirm that the most recent build of AddLinks-Insertion was successful.
-					def addLinksInsertionStatusUrl = httpRequest authentication: 'jenkinsKey', validResponseCodes: "${env.VALID_RESPONSE_CODES}", url: "${env.JENKINS_JOB_URL}/job/$currentRelease/job/Relational-Database-Updates/job/AddLinks-Insertion/lastBuild/api/json"
-					if (addLinksInsertionStatusUrl.getStatus() == 404) {
-						error("AddLinks-Insertion has not yet been run. Please complete a successful build.")
-					} else {
-						def addLinksInsertionJson = new JsonSlurper().parseText(addLinksInsertionStatusUrl.getContent())
-						if(addLinksInsertionJson['result'] != "SUCCESS"){
-							error("Most recent AddLinks-Insertion build status: " + addLinksInsertionJson['result'] + ". Please complete a successful build.")
-						}
-					}
+                    			utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/BioModels")
 				}
 			}
 		}
@@ -36,7 +28,7 @@ pipeline {
 		}
 		// This stage builds an archive containing the download directory jar and its dependencies.
 		// It also unpacks that archive to be used in the following stage.
-		stage('Setup: Build DownloadDirectory archive'){
+		stage('Setup: Unpack DownloadDirectory archive'){
 			steps{
 				script{
 					sh "mvn clean package -DskipTests"
@@ -51,22 +43,35 @@ pipeline {
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-//						withCredentials([file(credentialsId: 'stepsToRun', variable: 'StepsToRun')]){
-							//sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile $StepsToRun"
-							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
-//						}
+						sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
 					}
 				}
 			}
 		}
-		// This stage archives all logs and other outputs produced by DownloadDirectory.
+		// Archive all download directory files before moving them to download/XX folder.
+		stage('Post: Create archive and move files to download folder'){
+		    	steps{
+		        	script{
+					def releaseVersion = utils.getReleaseVersion()
+					def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
+					dir("${releaseVersion}"){
+						sh "tar -zcvf ${downloadDirectoryArchive} *"
+					}
+					sh "mv ${releaseVersion}/${downloadDirectoryArchive} ."
+					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
+					sh "rm -r ${releaseVersion}*"
+		        	}
+		    	}
+		}
+		// This stage archives all logs and other outputs produced by DownloadDirectory on S3.
 		stage('Post: Archive logs and validation files'){
 			steps{
 				script{
-					sh "mkdir -p archive/${currentRelease}/logs"
-					sh "mv --backup=numbered biopax*validator.zip archive/${currentRelease}/"
-					sh "gzip logs/*"
-					sh "mv logs/* archive/${currentRelease}/logs/"
+				        def releaseVersion = utils.getReleaseVersion()
+					def dataFiles = ["download-directory-v${releaseVersion}.tgz", "biopax_validator.zip", "biopax2_validator.zip"]
+					def logFiles = []
+					def foldersToDelete = ["/tmp/protege_files/"]
+				    	utils.cleanUpAndArchiveBuildFiles("download_directory", dataFiles, logFiles, foldersToDelete)
 				}
 			}
 		}

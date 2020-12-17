@@ -148,16 +148,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		if (stepsToRun.contains("models2pathways.tsv")) {
-			// This step copies the models2pathways.tsv file generated during the biomodels step of Release to the download_directory folder
-			logger.info("Copying models2pathways.tsv to release directory");
-			try {
-				Files.copy(Paths.get(releaseDirAbsolute + "biomodels/models2pathways.tsv"), Paths.get(releaseNumber + "/models2pathways.tsv"), StandardCopyOption.REPLACE_EXISTING);
-			} catch (Exception e) {
-				failedSteps.add("models2pathways.tsv");
-				e.printStackTrace();
-			}
-		}
 		if (stepsToRun.contains("protegeexporter")) {
 			try {
 				ProtegeExporter protegeExporter = new ProtegeExporter(props, releaseDirAbsolute, releaseNumber);
@@ -188,24 +178,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-
-		// Move files to downloadDirectory release folder
-		/*
-		logger.info("Moving all generated files to " + releaseDownloadDirWithNumber);
-		File folder = new File(releaseNumber);
-		File[] releaseFiles = folder.listFiles();
-		if (releaseFiles != null) {
-			for (File releaseFile : releaseFiles)
-			{
-				if (releaseFile.isDirectory() && releaseFile.getName().equalsIgnoreCase("databases"))
-				{
-					FileUtils.deleteDirectory(new File(releaseDownloadDirWithNumber + "/databases"));
-				}
-
-				Files.move(Paths.get(releaseFile.toString()), Paths.get(releaseDownloadDirWithNumber + "/" + releaseFile.getName()), StandardCopyOption.REPLACE_EXISTING);
-			}
-		}
-		*/
 		if (failedSteps.size() > 0) {
 			String failedStepsString = StringUtils.join(failedSteps, ", ");
 			logger.warn("Errors were reported in the following step(s): " + failedStepsString + "\n");
