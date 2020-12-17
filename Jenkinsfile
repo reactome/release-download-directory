@@ -1,19 +1,20 @@
-// This Jenkinsfile is used by Jenkins to run the DownloadDirectory step of Reactome's release.
-// It requires that the AddLinks-Insertion step has been run successfully before it can be run.
+// This Jenkinsfile is used by Jenkins to run the 'DownloadDirectory' step of Reactome's release.
+// It requires that the 'BioModels' step has been run successfully before it can be run.
 
 import org.reactome.release.jenkins.utilities.Utilities
 
 // Shared library maintained at 'release-jenkins-utils' repository.
 def utils = new Utilities()
+
 pipeline {
 	agent any
 
 	stages {
-		// This stage checks that an upstream project, AddLinks-Insertion, was run successfully for its last build.
+		// This stage checks that an upstream project 'BioModels' was run successfully for its last build.
 		stage('Check AddLinks-Insertion build succeeded'){
 			steps{
 				script{
-                    utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/AddLinks-Insertion")
+                    			utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/BioModels")
 				}
 			}
 		}
@@ -27,7 +28,7 @@ pipeline {
 		}
 		// This stage builds an archive containing the download directory jar and its dependencies.
 		// It also unpacks that archive to be used in the following stage.
-		stage('Setup: Build DownloadDirectory archive'){
+		stage('Setup: Unpack DownloadDirectory archive'){
 			steps{
 				script{
 					sh "mvn clean package -DskipTests"
@@ -42,26 +43,27 @@ pipeline {
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-							sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
+						sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
 					}
 				}
 			}
 		}
+		// Archive all download directory files before moving them to download/XX folder.
 		stage('Post: Create archive and move files to download folder'){
-		    steps{
-		        script{
-		            def releaseVersion = utils.getReleaseVersion()
-		            def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
-		            dir("${releaseVersion}"){
-		                sh "tar -zcvf ${downloadDirectoryArchive} *"
-		            }
-		            sh "mv ${releaseVersion}/${downloadDirectoryArchive} ."
-		            sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
-		            sh "rm -r ${releaseVersion}*"
-		        }
-		    }
+		    	steps{
+		        	script{
+					def releaseVersion = utils.getReleaseVersion()
+					def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
+					dir("${releaseVersion}"){
+						sh "tar -zcvf ${downloadDirectoryArchive} *"
+					}
+					sh "mv ${releaseVersion}/${downloadDirectoryArchive} ."
+					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
+					sh "rm -r ${releaseVersion}*"
+		        	}
+		    	}
 		}
-		// This stage archives all logs and other outputs produced by DownloadDirectory.
+		// This stage archives all logs and other outputs produced by DownloadDirectory on S3.
 		stage('Post: Archive logs and validation files'){
 			steps{
 				script{
