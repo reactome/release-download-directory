@@ -71,6 +71,8 @@ pipeline {
 					def dataFiles = ["download-directory-v${releaseVersion}.tgz", "biopax_validator.zip", "biopax2_validator.zip"]
 					def logFiles = []
 					def foldersToDelete = ["/tmp/protege_files/"]
+					// This file is left over in the repository after zipping it up
+					sh "rm -f gene_association.reactome"
 				    	utils.cleanUpAndArchiveBuildFiles("download_directory", dataFiles, logFiles, foldersToDelete)
 				}
 			}
