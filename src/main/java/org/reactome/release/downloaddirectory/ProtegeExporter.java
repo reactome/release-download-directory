@@ -78,7 +78,7 @@ public class ProtegeExporter
 			List<String> extraIncs = Arrays.asList(extraIncludeStr.split(","));
 			this.setExtraIncludes(extraIncs);
 		}
-		String pathToWrapper = props.getProperty(propsPrefix+".pathToWrapperScript");
+		String pathToWrapper = props.getProperty(propsPrefix+".pathToWrapperScript", "src/main/resources");
 		this.setPathToWrapperScript(pathToWrapper);
 		this.setDownloadDirectory(downloadDir);
 
