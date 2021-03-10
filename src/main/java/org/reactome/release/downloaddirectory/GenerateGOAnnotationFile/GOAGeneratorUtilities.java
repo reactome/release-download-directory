@@ -10,32 +10,71 @@ import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GO
 
 import java.io.*;
 import java.nio.file.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 public class GOAGeneratorUtilities {
+    private static final Logger logger = LogManager.getLogger();
 
-    // CrossReference IDs of excluded microbial species: C. trachomatis, E. coli, N. meningitidis, S. typhimurium, S. aureus, and T. gondii
-    private static final List<String> microbialSpeciesToExclude = Arrays.asList(C_TRACHOMATIS_CROSS_REFERENCE, E_COLI_CROSS_REFERENCE, N_MENINGITIDIS_CROSS_REFERENCE, S_AUREUS_CROSS_REFERENCE, S_TYPHIMURIUM_CROSS_REFERENCE, T_GONDII_CROSS_REFERENCE);
+    // CrossReference IDs of excluded microbial species:
+    // C. trachomatis, E. coli, N. meningitidis, S. typhimurium, S. aureus, and T. gondii
+    private static final List<String> microbialSpeciesToExclude = Arrays.asList(
+        C_TRACHOMATIS_CROSS_REFERENCE, E_COLI_CROSS_REFERENCE, N_MENINGITIDIS_CROSS_REFERENCE,
+        S_AUREUS_CROSS_REFERENCE, S_TYPHIMURIUM_CROSS_REFERENCE, T_GONDII_CROSS_REFERENCE
+    );
     private static Map<String, Integer> dates = new HashMap<>();
     private static Set<String> goaLines = new HashSet<>();
 
     /**
-     * Performs an AttributeQueryRequest on the incoming reaction instance. This will retrieve all protein's affiliated with the Reaction.
+     * Performs an AttributeQueryRequest on the incoming reaction instance. This will retrieve all protein's
+     * affiliated with the Reaction.
      * @param reactionInst -- GKInstance from ReactionlikeEvent class.
      * @return -- Set of GKInstances output from the AttributeQueryRequest.
      * @throws Exception -- MySQLAdaptor exception.
      */
     public static Set<GKInstance> retrieveProteins(GKInstance reactionInst) throws Exception {
         List<ClassAttributeFollowingInstruction> classesToFollow = new ArrayList<>();
-        classesToFollow.add(new ClassAttributeFollowingInstruction(ReactomeJavaConstants.Pathway, new String[]{ReactomeJavaConstants.hasEvent}, new String[]{}));
-        classesToFollow.add(new ClassAttributeFollowingInstruction(ReactomeJavaConstants.ReactionlikeEvent, new String[]{ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity}, new String[]{}));
-        classesToFollow.add(new ClassAttributeFollowingInstruction(ReactomeJavaConstants.Reaction, new String[]{ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity}, new String[]{}));
-        classesToFollow.add(new ClassAttributeFollowingInstruction(ReactomeJavaConstants.CatalystActivity, new String[]{ReactomeJavaConstants.physicalEntity}, new String[]{}));
-        classesToFollow.add(new ClassAttributeFollowingInstruction(ReactomeJavaConstants.Complex, new String[]{ReactomeJavaConstants.hasComponent}, new String[]{}));
-        classesToFollow.add(new ClassAttributeFollowingInstruction(ReactomeJavaConstants.EntitySet, new String[]{ReactomeJavaConstants.hasMember}, new String[]{}));
-        classesToFollow.add(new ClassAttributeFollowingInstruction(ReactomeJavaConstants.Polymer, new String[]{ReactomeJavaConstants.repeatedUnit}, new String[]{}));
+        classesToFollow.add(new ClassAttributeFollowingInstruction(
+            ReactomeJavaConstants.Pathway, new String[]{ReactomeJavaConstants.hasEvent}, new String[]{})
+        );
+        classesToFollow.add(new ClassAttributeFollowingInstruction(
+            ReactomeJavaConstants.ReactionlikeEvent,
+            new String[]{
+                ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity
+            },
+            new String[]{})
+        );
+        classesToFollow.add(new ClassAttributeFollowingInstruction(
+            ReactomeJavaConstants.Reaction,
+            new String[]{
+                ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity
+            },
+            new String[]{})
+        );
+        classesToFollow.add(new ClassAttributeFollowingInstruction(
+            ReactomeJavaConstants.CatalystActivity,
+            new String[]{ReactomeJavaConstants.physicalEntity},
+            new String[]{})
+        );
+        classesToFollow.add(new ClassAttributeFollowingInstruction(
+            ReactomeJavaConstants.Complex,
+            new String[]{ReactomeJavaConstants.hasComponent},
+            new String[]{})
+        );
+        classesToFollow.add(new ClassAttributeFollowingInstruction(
+            ReactomeJavaConstants.EntitySet,
+            new String[]{ReactomeJavaConstants.hasMember},
+            new String[]{})
+        );
+        classesToFollow.add(new ClassAttributeFollowingInstruction(
+            ReactomeJavaConstants.Polymer,
+            new String[]{ReactomeJavaConstants.repeatedUnit},
+            new String[]{})
+        );
 
         // All EWAS' associated with each of the above-stated classes will be output for this ReactionlikeEvent.
         String[] outClasses = new String[]{ReactomeJavaConstants.EntityWithAccessionedSequence};
@@ -43,7 +82,8 @@ public class GOAGeneratorUtilities {
     }
 
     /**
-     * Verifys existence of ReferenceEntity and Species, and that the ReferenceDatabase associated with the ReferenceEntity is from UniProt.
+     * Verifies existence of ReferenceEntity and Species, and that the ReferenceDatabase associated with the
+     * ReferenceEntity is from UniProt.
      * @param referenceEntityInst -- GKInstance, ReferenceEntity instance from the protein/catalyst/reaction.
      * @param speciesInst -- GKInstance, Species instance from the protein/catalyst/reaction.
      * @return -- true/false indicating protein validity.
@@ -51,52 +91,73 @@ public class GOAGeneratorUtilities {
      */
     public static boolean isValidProtein(GKInstance referenceEntityInst, GKInstance speciesInst) throws Exception {
         if (referenceEntityInst != null && speciesInst != null) {
-            GKInstance referenceDatabaseInst = (GKInstance) referenceEntityInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase);
-            if (referenceDatabaseInst != null && referenceDatabaseInst.getDisplayName().equals(UNIPROT_STRING) && speciesInst.getAttributeValue(ReactomeJavaConstants.crossReference) != null) {
+            GKInstance referenceDatabaseInst = (GKInstance) referenceEntityInst.getAttributeValue(
+                ReactomeJavaConstants.referenceDatabase
+            );
+            if (referenceDatabaseInst != null &&
+                referenceDatabaseInst.getDisplayName().equals(UNIPROT_STRING) &&
+                speciesInst.getAttributeValue(ReactomeJavaConstants.crossReference) != null) {
                 return true;
             }
         }
         return false;
     }
 
-    // This method checks the validity of the PhysicalEntity of a Catalyst instance by checking it has a compartment attribute.
-
     /**
-     * Shared catalyst validation method between MolecularFunction and BiologicalProcess classes that checks for existence of compartment attribute.
-     * @param catalystPEInst -- PhysicalEntity attribute from a Catalyst instance
-     * @return -- true/false indicating PhysicalEntity validity.
+     * Retrieves protein instances from a CatalystActivity instance's "activeUnit" attribute (or "physicalEntity"
+     * attribute when the "activeUnit" is empty) when the attribute value is either:
+     * 1) An EWAS
+     * 2) An EntitySet whose members are exclusively EWASs
+     * @param catalystActivity -- GKInstance, CatalystActivity instance from a ReactionlikeEvent
+     * @return -- Set of GKInstances, retrieved protein instances from either ActiveUnit or PhysicalEntity.
+     * NOTE: Returns an empty set if the CatalystActivity's ActiveUnit (or PhysicalEntity if ActiveUnit is empty) is
+     * not an EWAS or EntitySet with only member EWASs.
      * @throws Exception -- MySQLAdaptor exception.
      */
-    public static boolean isValidCatalystPE(GKInstance catalystPEInst) throws Exception {
-        return catalystPEInst != null && catalystPEInst.getAttributeValue(ReactomeJavaConstants.compartment) != null;
-    }
+    public static Set<GKInstance> getCatalystActivityProteins(GKInstance catalystActivity) throws Exception {
+        String warningMessage = validateCatalystActivity(catalystActivity);
+        if (!warningMessage.isEmpty()) {
+            logger.warn(warningMessage);
+            return new ArrayList<>();
+        }
 
-    /**
-     * Checks if the PhysicalEntity is a 'multi-instance' type, which includes Complexes, EntitySets, and Polymers
-     * @param physicalEntitySchemaClass
-     * @return == true/false indicating if this instance has multiple subunits that comprise it.
-     */
-    public static boolean isMultiInstancePhysicalEntity(SchemaClass physicalEntitySchemaClass) {
-        return physicalEntitySchemaClass.isa(ReactomeJavaConstants.Complex) || physicalEntitySchemaClass.isa(ReactomeJavaConstants.EntitySet) || physicalEntitySchemaClass.isa(ReactomeJavaConstants.Polymer);
+        Set<GKInstance> proteinInstances = new HashSet<>();
+        if (isAnEWAS(activeUnitOrPhysicalEntity)) {
+            proteinInstances.add(activeUnitOrPhysicalEntity);
+        } else if (isASetWithOnlyEWASMembers(activeUnitOrPhysicalEntity)) {
+            proteinInstances.addAll(
+                activeUnitOrPhysicalEntity.getAttributeValuesList(ReactomeJavaConstants.hasMember)
+            );
+        }
+        return proteinInstances;
     }
 
     /**
      * Builds most of the GO annotation line that will be added to gene_association.reactome.
      * @param referenceEntityInst -- GKInstance, ReferenceEntity instance from the protein/catalyst/reaction.
-     * @param goLetter -- String, can be "C", "F" or "P" for Cellular Component, Molecular Function, or Biological Process annotations, respectively.
+     * @param goLetter -- String, can be "C", "F" or "P" for Cellular Component, Molecular Function, or Biological
+     * Process annotations, respectively.
+     * @param goQualifier -- String, GO Qualifier that describes the association meaning between a protein and a
+     * GO term
      * @param goAccession -- String, GO accession taken from the protein/catalyst/reaction instance.
-     * @param eventIdentifier -- String, StableIdentifier of the protein/catalyst/reaction. Will have either a 'REACTOME' or 'PMID' prefix.
-     * @param evidenceCode -- String, Will be either "TAS" (Traceable Author Statement) or "EXP" (Experimentally Inferred). Most will be TAS, unless there is a PMID accession.
+     * @param eventIdentifier -- String, StableIdentifier of the protein/catalyst/reaction. Will have either a
+     * 'REACTOME' or 'PMID' prefix.
+     * @param evidenceCode -- String, Will be either "TAS" (Traceable Author Statement) or "EXP" (Experimentally
+     * Inferred). Most will be TAS, unless there is a PMID accession.
      * @param taxonIdentifier -- String, Reactome Species CrossReference identifier.
      * @return -- GO annotation line, excluding the DateTime and 'Reactome' columns.
      * @throws Exception -- MySQLAdaptor exception.
      */
-    public static String generateGOALine(GKInstance referenceEntityInst, String goLetter, String goAccession, String eventIdentifier, String evidenceCode, String taxonIdentifier) throws Exception {
+    public static String generateGOALine(GKInstance referenceEntityInst, String goLetter, String goQualifier,
+                                         String goAccession, String eventIdentifier, String evidenceCode,
+                                         String taxonIdentifier)
+        throws Exception {
+
         List<String> goaLine = new ArrayList<>();
         goaLine.add(UNIPROT_KB_STRING);
         goaLine.add(referenceEntityInst.getAttributeValue(ReactomeJavaConstants.identifier).toString());
         goaLine.add(getSecondaryIdentifier(referenceEntityInst));
-        goaLine.add("");
+        goaLine.add(goQualifier);
         goaLine.add(goAccession);
         goaLine.add(eventIdentifier);
         goaLine.add(evidenceCode);
@@ -113,7 +174,8 @@ public class GOAGeneratorUtilities {
     /**
      * Returns the value for the 'secondaryIdentifier' column in the GOA line.
      * @param referenceEntityInst -- GKInstance, ReferenceEntity instance from the protein/catalyst/reaction.
-     * @return -- String, value taken from the secondaryIdentifier, geneName or identifier attributes, whichever is not null.
+     * @return -- String, value taken from the secondaryIdentifier, geneName or identifier attributes, whichever is
+     * not null.
      * @throws Exception -- MySQLAdaptor exception.
      */
     public static String getSecondaryIdentifier(GKInstance referenceEntityInst) throws Exception {
@@ -136,7 +198,8 @@ public class GOAGeneratorUtilities {
     }
 
     /**
-     * Checks that the GO accession is not for Protein Binding. These don't receive a GO annotation since they require an "IPI" evidence code.
+     * Checks that the GO accession is not for Protein Binding. These don't receive a GO annotation since they require
+     * an "IPI" evidence code.
      * @param instance -- GKInstance
      * @return -- true if goAccession matches the protein binding annotation value, false if not.
      */
@@ -158,10 +221,11 @@ public class GOAGeneratorUtilities {
     }
 
     /**
-     * Finds most recent modification date for a GOA line. This is a bit of a moving target since GOA lines can be generated convergently for
-     * each type of GO annotation. Depending on if it is looking at the individual protein or whole reaction level, the date attribute
-     * may not be the most recent. If it is found that the goaLine was generated earlier but that a more recent modification date exists based on the
-     * entity that is currently being checked, then it will just update that date value in the hash associated with the line. (Yes, this is weird).
+     * Finds most recent modification date for a GOA line. This is a bit of a moving target since GOA lines can be
+     * generated convergently for each type of GO annotation. Depending on if it is looking at the individual protein
+     * or whole reaction level, the date attribute may not be the most recent. If it is found that the goaLine was
+     * generated earlier but that a more recent modification date exists based on the entity that is currently being
+     * checked, then it will just update that date value in the hash associated with the line. (Yes, this is weird).
      * @param entityInst -- GKInstance, Protein/catalyst/reaction that is receiving a GO annotation.
      * @param goaLine -- String, GO annotation line, used for checking the 'dates' structure.
      * @return -- int, parsed from the dateTime of the entityInst's modified or created attributes.
@@ -193,21 +257,26 @@ public class GOAGeneratorUtilities {
      * @throws Exception -- MySQLAdaptor exception.
      */
     private static int getDate(GKInstance instanceEditInst) throws Exception {
-        return Integer.valueOf(instanceEditInst.getAttributeValue(ReactomeJavaConstants.dateTime).toString().split(" ")[0].replaceAll("-", ""));
+        return Integer.valueOf(
+            instanceEditInst.getAttributeValue(ReactomeJavaConstants.dateTime)
+                .toString()
+                .split(" ")[0]
+                .replaceAll("-", "")
+        );
     }
 
     /**
-     * Iterates through the lines in the 'goaLines' list, retrieves the date associated with that line and also adds the 'Reactome' column before adding it to the gene_association.reactome file.
+     * Iterates through the lines in the 'goaLines' list, retrieves the date associated with that line and also adds
+     * the 'Reactome' column before adding it to the gene_association.reactome file.
      * @throws IOException -- File writing/reading exceptions.
      */
     public static void outputGOAFile() throws IOException {
 
         Path goaFilepath = Paths.get(GOA_FILENAME);
 
-        final String GAF_HEADER = "!gaf-version: 2.1\n";
-
         Files.deleteIfExists(goaFilepath);
-        Files.write(goaFilepath, GAF_HEADER.getBytes());
+
+        writeHeader(goaFilepath);
 
         List<String> lines = goaLines.stream().sorted().map(
                 line -> String.join("\t", line, dates.get(line).toString(), REACTOME_STRING, "","")
@@ -215,6 +284,20 @@ public class GOAGeneratorUtilities {
         Files.write(goaFilepath, lines, StandardOpenOption.APPEND);
 
         gzipGOAFile();
+    }
+
+    private static void writeHeader(Path goaFilepath) throws IOException {
+        final String gafHeader = String.join(System.lineSeparator(),
+            "!gaf-version: 2.2",
+            "generated-by: Reactome",
+            "date-generated: " + getCurrentDateAsYYYYMMDD()
+        );
+
+        Files.write(goaFilepath, gafHeader.getBytes(), StandardOpenOption.APPEND);
+    }
+
+    private static String getCurrentDateAsYYYYMMDD() {
+        return Instant.now().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 
     /**
@@ -243,5 +326,71 @@ public class GOAGeneratorUtilities {
     public static void moveFile(String targetDirectory) throws IOException {
         String targetFilepath = targetDirectory + GOA_FILENAME + ".gz";
         Files.move(Paths.get(GOA_FILENAME + ".gz"), Paths.get(targetFilepath), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private static GKInstance getActiveUnitIfFilledOrElsePhysicalEntity(GKInstance catalystActivity) {
+        GKInstance activeUnitInst = (GKInstance) catalystActivity.getAttributeValue(
+            ReactomeJavaConstants.activeUnit
+        );
+
+        if (activeUnitInst != null) {
+            return activeUnitInst;
+        } else {
+            return (GKInstance) catalystActivity.getAttributeValue(ReactomeJavaConstants.physicalEntity);
+        }
+    }
+
+    private static String validateCatalystActivity(GKInstance catalystActivity) throws Exception {
+        GKInstance activeUnitOrPhysicalEntity = getActiveUnitIfFilledOrElsePhysicalEntity(catalystActivity);
+
+        String warningMessage = "";
+        if (activeUnitOrPhysicalEntity == null) {
+            warningMessage = "Active Unit/Physical Entity in " + catalystActivity.getExtendedDisplayName() +
+                " is null - skipping annotation";
+        } else if (!hasCompartment(activeUnitOrPhysicalEntity)) {
+            warningMessage = "Active Unit/Physical Entity " + activeUnitOrPhysicalEntity.getExtendedDisplayName() +
+                " has no compartment in Catalyst Activity " + catalystActivity.getExtendedDisplayName() + " -" +
+                " skipping annotation";
+        } else if (!isAnEWAS(activeUnitOrPhysicalEntity) && !isASetWithOnlyEWASMembers(activeUnitOrPhysicalEntity)) {
+            warningMessage = "Active Unit/Physical Entity " + activeUnitOrPhysicalEntity.getExtendedDisplayName() +
+                " is not an EWAS or an EntitySet with only EWAS members - skipping annotation";
+        }
+        return warningMessage;
+    }
+
+    /**
+     * Shared catalyst validation method between MolecularFunction and BiologicalProcess classes that checks for
+     * existence of compartment attribute.
+     * @param catalystPEInst -- PhysicalEntity attribute from a Catalyst instance
+     * @return -- true/false indicating PhysicalEntity validity.
+     * @throws Exception -- MySQLAdaptor exception.
+     */
+    private static boolean hasCompartment(GKInstance catalystPEInst) throws Exception {
+        return catalystPEInst != null && catalystPEInst.getAttributeValue(ReactomeJavaConstants.compartment) != null;
+    }
+
+    private static boolean isAnEWAS(GKInstance physicalEntity) {
+        return physicalEntity.getSchemClass().isa(ReactomeJavaConstants.EntityWithAccessionedSequence);
+    }
+
+    private static boolean isASetWithOnlyEWASMembers(GKInstance physicalEntity) throws Exception {
+        return physicalEntity.getSchemClass().isa(ReactomeJavaConstants.EntitySet) &&
+            hasOnlyEWASMembers(physicalEntity);
+    }
+
+
+    /**
+     * Checks that the incoming EntitySet instance only has EWAS members
+     * @param entitySetInst -- GKInstance,  ActiveUnit/PhysicalEntity of a catalyst that is an EntitySet
+     * @return -- boolean, true if the instance only contains EWAS' in its hasMember attribute, false if not.
+     * @throws Exception -- MySQLAdaptor exception.
+     */
+    private static boolean hasOnlyEWASMembers(GKInstance entitySetInst) throws Exception {
+        Collection<GKInstance> memberInstances = (Collection<GKInstance>) entitySetInst.getAttributeValuesList(
+            ReactomeJavaConstants.hasMember
+        );
+        return memberInstances
+            .stream()
+            .allMatch(member -> member.getSchemClass().isa(ReactomeJavaConstants.EntityWithAccessionedSequence));
     }
 }
