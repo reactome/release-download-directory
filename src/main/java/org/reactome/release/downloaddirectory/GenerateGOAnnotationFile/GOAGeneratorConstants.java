@@ -8,6 +8,11 @@ public class GOAGeneratorConstants {
     public static final String CELLULAR_COMPONENT_LETTER = "C";
     public static final String MOLECULAR_FUNCTION_LETTER = "F";
 
+    // GO Qualifiers (meaning of association between protein and GO term)
+    public static final String BIOLOGICAL_PROCESS_QUALIFIER = "involved_in";
+    public static final String CELLULAR_COMPONENT_QUALIFIER = "located_in";
+    public static final String MOLECULAR_FUNCTION_QUALIFIER = "enables";
+
     // Species with alternate GO compartment
     public static final String B_ANTHRACIS_CROSS_REFERENCE = "1392";
     public static final String C_BOTULINUM_CROSS_REFERENCE = "1491";
