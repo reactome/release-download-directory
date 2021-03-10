@@ -63,7 +63,15 @@ public class CellularComponentAnnotationBuilder {
         String goCellularCompartmentAccession = getCellularCompartmentGOAccession(proteinInst);
         String goaLine = "";
         if (!goCellularCompartmentAccession.isEmpty()) {
-            goaLine = GOAGeneratorUtilities.generateGOALine(referenceEntityInst, CELLULAR_COMPONENT_LETTER, goCellularCompartmentAccession, reactomeIdentifier, TRACEABLE_AUTHOR_STATEMENT_CODE, taxonIdentifier);
+            goaLine = GOAGeneratorUtilities.generateGOALine(
+                referenceEntityInst,
+                CELLULAR_COMPONENT_LETTER,
+                CELLULAR_COMPONENT_QUALIFIER,
+                goCellularCompartmentAccession,
+                reactomeIdentifier,
+                TRACEABLE_AUTHOR_STATEMENT_CODE,
+                taxonIdentifier
+            );
             GOAGeneratorUtilities.assignDateForGOALine(proteinInst, goaLine);
         } else {
             logger.info("Protein has no Cellular Compartment accession, skipping GO annotation");
