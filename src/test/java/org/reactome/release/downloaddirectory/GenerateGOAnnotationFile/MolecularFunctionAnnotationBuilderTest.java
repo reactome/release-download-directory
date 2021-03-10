@@ -80,7 +80,7 @@ public class MolecularFunctionAnnotationBuilderTest {
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("R1234");
         Mockito.when(GOAGeneratorUtilities.getSecondaryIdentifier(mockReferenceEntityInst)).thenReturn("R5678");
         Mockito.when(GOAGeneratorUtilities.getStableIdentifierIdentifier(mockReactionInst)).thenReturn("1234");
-        Mockito.when(GOAGeneratorUtilities.generateGOALine(mockReferenceEntityInst, GOAGeneratorConstants.MOLECULAR_FUNCTION_LETTER, "GO:1234", "PMID:1234", GOAGeneratorConstants.INFERRED_FROM_EXPERIMENT_CODE, "1234")).thenCallRealMethod();
+        Mockito.when(GOAGeneratorUtilities.generateGOALine(mockReferenceEntityInst, GOAGeneratorConstants.MOLECULAR_FUNCTION_LETTER, GOAGeneratorConstants.MOLECULAR_FUNCTION_QUALIFIER, "GO:1234", "PMID:1234", GOAGeneratorConstants.INFERRED_FROM_EXPERIMENT_CODE, "1234")).thenCallRealMethod();
         List<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(1)));
@@ -112,7 +112,7 @@ public class MolecularFunctionAnnotationBuilderTest {
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("R1234");
         Mockito.when(GOAGeneratorUtilities.getSecondaryIdentifier(mockReferenceEntityInst)).thenReturn("R5678");
         Mockito.when(GOAGeneratorUtilities.getStableIdentifierIdentifier(mockReactionInst)).thenReturn("1234");
-        Mockito.when(GOAGeneratorUtilities.generateGOALine(mockReferenceEntityInst, GOAGeneratorConstants.MOLECULAR_FUNCTION_LETTER, "GO:1234", "REACTOME:1234", GOAGeneratorConstants.TRACEABLE_AUTHOR_STATEMENT_CODE, "1234")).thenCallRealMethod();
+        Mockito.when(GOAGeneratorUtilities.generateGOALine(mockReferenceEntityInst, GOAGeneratorConstants.MOLECULAR_FUNCTION_LETTER, GOAGeneratorConstants.MOLECULAR_FUNCTION_QUALIFIER, "GO:1234", "REACTOME:1234", GOAGeneratorConstants.TRACEABLE_AUTHOR_STATEMENT_CODE, "1234")).thenCallRealMethod();
         List<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(1)));

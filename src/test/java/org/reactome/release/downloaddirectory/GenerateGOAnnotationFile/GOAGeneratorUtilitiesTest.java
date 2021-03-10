@@ -84,7 +84,7 @@ public class GOAGeneratorUtilitiesTest {
     public void generateGOALineTest() throws Exception {
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("ABCD1234");
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.geneName)).thenReturn("ABCD1");
-        String goaLine = GOAGeneratorUtilities.generateGOALine(mockReferenceEntityInst, "C", "A12345", "REACTOME:123456", "TAS", "54321A");
+        String goaLine = GOAGeneratorUtilities.generateGOALine(mockReferenceEntityInst, "C", "located_in", "A12345", "REACTOME:123456", "TAS", "54321A");
 
         assertEquals(testGOALine, goaLine);
     }
