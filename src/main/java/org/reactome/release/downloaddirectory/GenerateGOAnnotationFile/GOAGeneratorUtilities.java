@@ -292,7 +292,6 @@ public class GOAGeneratorUtilities {
     }
 
     private static GKInstance getActiveUnitIfFilledOrElsePhysicalEntity(GKInstance catalystActivity) throws Exception {
-        System.out.println("Catalyst Activity: " + catalystActivity);
         GKInstance activeUnitInst = (GKInstance) catalystActivity.getAttributeValue(
             ReactomeJavaConstants.activeUnit
         );
