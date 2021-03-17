@@ -14,7 +14,10 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
+import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorConstants.C_TRACHOMATIS_CROSS_REFERENCE;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({GOAGeneratorUtilities.class})
@@ -24,6 +27,8 @@ import static org.junit.Assert.*;
 
 public class GOAGeneratorUtilitiesTest {
 
+    @Mock
+    private GKInstance mockProteinInst;
     @Mock
     private GKInstance mockReferenceEntityInst;
     @Mock
@@ -46,62 +51,69 @@ public class GOAGeneratorUtilitiesTest {
 
     private List<GKInstance> mockModifiedSet = new ArrayList<>();
 
-    private final String testGOALine = "UniProtKB\tABCD1234\tABCD1\t\tA12345\tREACTOME:123456\tTAS\t\tC\t\t\tprotein\ttaxon:54321A";
+    private final String testGOALine = "UniProtKB\tABCD1234\tABCD1\tlocated_in\tA12345\tREACTOME:123456\tTAS\t\tC\t\t\tprotein\ttaxon:54321A";
 
 
     @Test
-    public void validateProteinTest() throws Exception {
+    public void proteinWithSpeciesAndFromUniProtIsValid() throws Exception {
+        Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
+        Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.referenceEntity)).thenReturn(mockReferenceEntityInst);
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDatabaseInst);
         Mockito.when(mockRefDatabaseInst.getDisplayName()).thenReturn("UniProt");
-        Mockito.when(mockSpeciesInst.getAttributeValue(ReactomeJavaConstants.crossReference)).thenReturn(mockCrossReferenceInst);
 
-        assertTrue(GOAGeneratorUtilities.isValidProtein(mockReferenceEntityInst, mockSpeciesInst));
-
-        Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDatabaseInst);
-        Mockito.when(mockRefDatabaseInst.getDisplayName()).thenReturn("UniProt");
-        Mockito.when(mockSpeciesInst.getAttributeValue(ReactomeJavaConstants.crossReference)).thenReturn(null);
-
-        assertFalse(GOAGeneratorUtilities.isValidProtein(mockReferenceEntityInst, mockSpeciesInst));
+        assertThat(GOAGeneratorUtilities.isValidProtein(mockProteinInst), is(equalTo(true)));
     }
 
     @Test
-    public void validateCatalystPETest() throws Exception {
-        Mockito.when(mockCatatlystPEInst.getAttributeValue(ReactomeJavaConstants.compartment)).thenReturn(mockCompartmentInst);
+    public void proteinWithoutSpeciesIsNotValid() throws Exception {
+        Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(null);
 
-        assertTrue(GOAGeneratorUtilities.isValidCatalystPE(mockCatatlystPEInst));
+        assertThat(GOAGeneratorUtilities.isValidProtein(mockProteinInst), is(equalTo(false)));
     }
 
     @Test
-    public void multiInstancePhysicalEntityTest() {
-        Mockito.when(mockSchemaClass.isa(ReactomeJavaConstants.EntitySet)).thenReturn(true);
-        assertTrue(GOAGeneratorUtilities.isMultiInstancePhysicalEntity(mockSchemaClass));
+    public void proteinNotFromUniProtIsNotValid() throws Exception {
+        Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
+        Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDatabaseInst);
+        Mockito.when(mockRefDatabaseInst.getDisplayName()).thenReturn("Database other than UniProt");
 
-        Mockito.when(mockSchemaClass.isa(ReactomeJavaConstants.EntitySet)).thenReturn(false);
-        assertFalse(GOAGeneratorUtilities.isMultiInstancePhysicalEntity(mockSchemaClass));
+        assertThat(GOAGeneratorUtilities.isValidProtein(mockProteinInst), is(equalTo(false)));
     }
 
     @Test
     public void generateGOALineTest() throws Exception {
+        Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.referenceEntity)).thenReturn(mockReferenceEntityInst);
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("ABCD1234");
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.geneName)).thenReturn("ABCD1");
-        String goaLine = GOAGeneratorUtilities.generateGOALine(mockReferenceEntityInst, "C", "located_in", "A12345", "REACTOME:123456", "TAS", "54321A");
 
-        assertEquals(testGOALine, goaLine);
+        mockTaxonIdentifierRetrieval("54321A");
+
+        String goaLine = GOAGeneratorUtilities.generateGOALine(
+                mockProteinInst,
+                "C",
+                "located_in",
+                "A12345",
+                "REACTOME:123456",
+                "TAS"
+        );
+
+        assertThat(testGOALine, is(equalTo(goaLine)));
     }
 
     @Test
-    public void excludedMicrobialSpeciesTest() {
-        assertTrue(GOAGeneratorUtilities.isExcludedMicrobialSpecies("813"));
-        assertFalse(GOAGeneratorUtilities.isExcludedMicrobialSpecies("812"));
+    public void hasExcludedMicrobialSpeciesIsTrueForMicrobialSpeciesToExclude() throws Exception {
+        final String actualExcludedMicrobialSpeciesTaxonIdentifier = C_TRACHOMATIS_CROSS_REFERENCE;
+
+        mockTaxonIdentifierRetrieval(actualExcludedMicrobialSpeciesTaxonIdentifier);
+        assertTrue(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockProteinInst));
     }
 
     @Test
-    public void proteinBindingAnnotationTest() throws Exception {
-        Mockito.when(mockCompartmentInst.getAttributeValue(ReactomeJavaConstants.accession)).thenReturn("0005515");
-        assertTrue(GOAGeneratorUtilities.isProteinBindingAnnotation(mockCompartmentInst));
+    public void hasExcludedMicrobialSpeciesIsFalseForUnknownMicrobialSpecies() throws Exception {
+        final String fakeMicrobialSpeciesTaxonIdentifier = "812";
 
-        Mockito.when(mockCompartmentInst.getAttributeValue(ReactomeJavaConstants.accession)).thenReturn("1234567");
-        assertFalse(GOAGeneratorUtilities.isProteinBindingAnnotation(mockCompartmentInst));
+        mockTaxonIdentifierRetrieval(fakeMicrobialSpeciesTaxonIdentifier);
+        assertThat(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockProteinInst), is(equalTo(false)));
     }
 
     @Test
@@ -113,5 +125,11 @@ public class GOAGeneratorUtilitiesTest {
         int testDate = GOAGeneratorUtilities.assignDateForGOALine(mockReactionInst, testGOALine);
 
         assertEquals(20190101, testDate);
+    }
+
+    private void mockTaxonIdentifierRetrieval(String taxonIdentifier) throws Exception {
+        Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
+        Mockito.when(mockSpeciesInst.getAttributeValue(ReactomeJavaConstants.crossReference)).thenReturn(mockCrossReferenceInst);
+        Mockito.when(mockCrossReferenceInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn(taxonIdentifier);
     }
 }
