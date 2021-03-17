@@ -27,7 +27,7 @@ public class GOAGeneratorConstants {
     public static final String T_GONDII_CROSS_REFERENCE = "5811";
 
     // Excluded GO accession that requires an IPI prefix that we do not currently handle
-    public static final String PROTEIN_BINDING_ANNOTATION = "0005515";
+    public static final String PROTEIN_BINDING_ANNOTATION = "GO:0005515";
 
     // These strings are used during Biological Process annotation generation. Since they
     // are specific to this module, I thought it appropriate that they had their own constants
