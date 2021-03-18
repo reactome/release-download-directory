@@ -37,7 +37,7 @@ public class CreateGOAFile {
         GOAGeneratorUtilities.outputGOAFile();
         GOAGeneratorUtilities.moveFile(releaseNumber + "/");
         logger.info("Finished generating gene_association.reactome");
-        }
+    }
 
     // Parent method that houses electronically and manually inferred instance checks.
     private static boolean isInferred(GKInstance reactionInst) throws Exception {
