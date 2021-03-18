@@ -184,6 +184,7 @@ public class GOAGeneratorUtilities {
         Path goaFilepath = Paths.get(GOA_FILENAME);
 
         Files.deleteIfExists(goaFilepath);
+        Files.createFile(goaFilepath);
 
         writeHeader(goaFilepath);
 
@@ -193,7 +194,7 @@ public class GOAGeneratorUtilities {
 
         Files.write(goaFilepath, lines, StandardOpenOption.APPEND);
 
-        gzipGOAFile();
+        gzipGOAFile(goaFilepath);
     }
 
     /**
@@ -264,7 +265,7 @@ public class GOAGeneratorUtilities {
             "!gaf-version: 2.2",
             "generated-by: Reactome",
             "date-generated: " + getCurrentDateAsYYYYMMDD()
-        );
+        ).concat(System.lineSeparator());
 
         Files.write(goaFilepath, gafHeader.getBytes(), StandardOpenOption.APPEND);
     }
@@ -275,13 +276,13 @@ public class GOAGeneratorUtilities {
 
     /**
      * Gzips gene_association.reactome file
+     * @param goaFilePath Path to the unzipped gene_association.reactome file
      * @throws IOException -- File writing/reading exceptions.
      */
-    private static void gzipGOAFile() throws IOException {
-        File goaFile = new File(GOA_FILENAME);
-        File goaFileGZipped = new File(GOA_FILENAME + ".gz");
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(new FileOutputStream(goaFileGZipped));
-        try (FileInputStream fileInputStream = new FileInputStream(goaFile)) {
+    private static void gzipGOAFile(Path goaFilePath) throws IOException {
+        Path goaFilePathGZipped = Paths.get(goaFilePath.toAbsolutePath().toString() + ".gz");
+        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(new FileOutputStream(goaFilePathGZipped.toFile()));
+        try (FileInputStream fileInputStream = new FileInputStream(goaFilePath.toFile())) {
             byte[] buffer = new byte[1024];
             int length;
             while((length=fileInputStream.read(buffer)) != -1) {
@@ -292,9 +293,7 @@ public class GOAGeneratorUtilities {
     }
 
     private static GKInstance getActiveUnitIfFilledOrElsePhysicalEntity(GKInstance catalystActivity) throws Exception {
-        GKInstance activeUnitInst = (GKInstance) catalystActivity.getAttributeValue(
-            ReactomeJavaConstants.activeUnit
-        );
+        GKInstance activeUnitInst = (GKInstance) catalystActivity.getAttributeValue(ReactomeJavaConstants.activeUnit);
 
         if (activeUnitInst != null) {
             return activeUnitInst;
