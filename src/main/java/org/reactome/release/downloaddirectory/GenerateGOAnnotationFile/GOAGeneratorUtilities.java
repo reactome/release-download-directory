@@ -66,6 +66,12 @@ public class GOAGeneratorUtilities {
         return proteinIssue;
     }
 
+    /**
+     * Retrieves the Reference Entity for the Protein.
+     * @param protein Protein for which to retrieve the reference entity
+     * @return GKInstance representing the protein's reference entity (or null if the protein has no reference entity)
+     * @throws Exception Thrown if there is a problem in retrieving the protein's reference entity from the database
+     */
     public static GKInstance getReferenceEntityFromProtein(GKInstance protein) throws Exception {
          return (GKInstance) protein.getAttributeValue(ReactomeJavaConstants.referenceEntity);
     }
