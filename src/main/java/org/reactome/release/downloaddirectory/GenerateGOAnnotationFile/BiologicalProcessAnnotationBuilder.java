@@ -68,7 +68,7 @@ public class BiologicalProcessAnnotationBuilder {
      */
     private static List<String> getGOBiologicalProcessLine(GKInstance protein, GKInstance reaction) throws Exception {
         List<String> goaLines = new ArrayList<>();
-        for (Map<String, String> biologicalProcessAccession : getGOBiologicalProcessAccessions(reaction, 0)) {
+        for (Map<String, String> biologicalProcessAccession : getGOBiologicalProcessAccessions(reaction)) {
             String goaLine = GOAGeneratorUtilities.generateGOALine(
                 protein,
                 BIOLOGICAL_PROCESS_LETTER,
@@ -84,21 +84,38 @@ public class BiologicalProcessAnnotationBuilder {
     }
 
     /**
+     * This method checks for a populated 'goBiologicalProcess' attribute in the incoming ReactionlikeEvent. If there
+     * are none it delegates to #getGOBiologicalProcessAccessions(GKInstance, int) to recurse on parent pathway events
+     * to the pre-determined maximum depth (see constant at the top of this class).
+     *
+     * @param reactionlikeEvent -- GKInstance, The original ReactionlikeEvent instance
+     * @return -- 1 or more Maps containing the GO accession string and event instance it is associated with. These
+     * maps contain two fields: {"event":"Reactome:identifier"}, and {"accession":"GO:Accession}"
+     * @throws Exception -- MySQLAdaptor exception.
+     * @see #getGOBiologicalProcessAccessions(GKInstance, int)
+     */
+    private static List<Map<String, String>> getGOBiologicalProcessAccessions(GKInstance reactionlikeEvent)
+        throws Exception {
+
+        return getGOBiologicalProcessAccessions(reactionlikeEvent, 0);
+    }
+
+    /**
      * This method checks for a populated 'goBiologicalProcess' attribute in the incoming instance. If there are none
      * and the max recursion has been reached, its 'hasEvent' referral is checked for it. Once finding it, it returns
      * the 'accession' and 'identifier' for each one, which will be used to generate a GOA line.
      * @param event -- GKInstance, Can be the original reaction instance, or, if it had no Biological Process
      * accessions, its Event referrals.
-     * @param recursion -- int, Indicates number of times the method has been recursively called.
+     * @param recursionDepth -- int, Indicates number of times the method has been recursively called.
      * @return -- 1 or more Maps containing the GO accession string and event instance it is associated with. These
      * maps contain two fields: {"event":"Reactome:identifier"}, and {"accession":"GO:Accession}"
      * @throws Exception -- MySQLAdaptor exception.
      */
-    private static List<Map<String, String>> getGOBiologicalProcessAccessions(GKInstance event, int recursion)
+    private static List<Map<String, String>> getGOBiologicalProcessAccessions(GKInstance event, int recursionDepth)
         throws Exception {
 
         List<Map<String, String>> goBiologicalProcessAccessions = new ArrayList<>();
-        if (recursion <= MAX_RECURSION_LEVEL) {
+        if (recursionDepth <= MAX_RECURSION_LEVEL) {
             Collection<GKInstance> goBiologicalProcessInstances = event.getAttributeValuesList(
                 ReactomeJavaConstants.goBiologicalProcess
             );
@@ -114,13 +131,13 @@ public class BiologicalProcessAnnotationBuilder {
 
                 }
             } else {
-                recursion++;
+                recursionDepth++;
                 Collection<GKInstance> hasEventReferralInstances =
                     (Collection<GKInstance>) event.getReferers(ReactomeJavaConstants.hasEvent);
                 if (hasEventReferralInstances != null) {
                     for (GKInstance hasEventReferralInst : hasEventReferralInstances) {
                         goBiologicalProcessAccessions.addAll(
-                            getGOBiologicalProcessAccessions(hasEventReferralInst, recursion)
+                            getGOBiologicalProcessAccessions(hasEventReferralInst, recursionDepth)
                         );
                     }
                 }
