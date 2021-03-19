@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -19,7 +20,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorConstants.C_TRACHOMATIS_CROSS_REFERENCE;
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 @PrepareForTest({GOAGeneratorUtilities.class})
 @PowerMockIgnore({"org.apache.logging.log4j.*", "javax.management.*", "javax.script.*",
         "javax.xml.*", "com.sun.org.apache.xerces.*", "org.xml.sax.*", "com.sun.xml.*", "org.w3c.dom.*", "org.mockito.*"})
@@ -38,16 +39,9 @@ public class GOAGeneratorUtilitiesTest {
     @Mock
     private GKInstance mockCrossReferenceInst;
     @Mock
-    private GKInstance mockCatatlystPEInst;
-    @Mock
-    private GKInstance mockCompartmentInst;
-    @Mock
     private GKInstance mockReactionInst;
     @Mock
     private GKInstance mockModifiedInst;
-
-    @Mock
-    private SchemaClass mockSchemaClass;
 
     private List<GKInstance> mockModifiedSet = new ArrayList<>();
 
@@ -89,12 +83,12 @@ public class GOAGeneratorUtilitiesTest {
         mockTaxonIdentifierRetrieval("54321A");
 
         String goaLine = GOAGeneratorUtilities.generateGOALine(
-                mockProteinInst,
-                "C",
-                "located_in",
-                "A12345",
-                "REACTOME:123456",
-                "TAS"
+            mockProteinInst,
+            "C",
+            "located_in",
+            "A12345",
+            "REACTOME:123456",
+            "TAS"
         );
 
         assertThat(testGOALine, is(equalTo(goaLine)));
