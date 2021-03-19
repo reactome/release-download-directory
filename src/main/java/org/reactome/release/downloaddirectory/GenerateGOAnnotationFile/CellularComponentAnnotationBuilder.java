@@ -135,8 +135,7 @@ public class CellularComponentAnnotationBuilder {
     }
 
     /**
-     * Proteins reaching this part of the script are deemed valid for GO annotation. Retrieves the Cellular Compartment
-     * accession associated with this instance and then calls the GOA line generator.
+     * Retrieves the Cellular Compartment accession associated with this protein and then calls the GOA line generator.
      * @param protein -- GKInstance, Individual protein instance from the retrieved proteins.
      * @param reactionlikeEvent -- GKInstance, Parent ReactionlikeEvent with which the protein is associated.
      * @throws Exception -- MySQLAdaptor exception.
