@@ -67,14 +67,14 @@ public class CellularComponentAnnotationBuilder {
 
     private static List<ClassAttributeFollowingInstruction> getClassAttributeInstructionsToFollow() {
         List<ClassAttributeFollowingInstruction> classesToFollow = new ArrayList<>();
-        for (String className : getClassToClassAttributesMap().keySet()) {
-            List<String> classAttributes = getClassToClassAttributesMap().get(className);
+        for (String className : getClassToClassAttributesMapForObtainingProteins().keySet()) {
+            List<String> classAttributes = getClassToClassAttributesMapForObtainingProteins().get(className);
             classesToFollow.add(getClassAttributeFollowingInstruction(className, classAttributes));
         }
         return classesToFollow;
     }
 
-    private static Map<String, List<String>> getClassToClassAttributesMap() {
+    private static Map<String, List<String>> getClassToClassAttributesMapForObtainingProteins() {
         Map<String, List<String>> classToClassAttributesForFollowingInstructions = new HashMap<>();
 
         classToClassAttributesForFollowingInstructions.put(
