@@ -245,17 +245,6 @@ public class GOAGeneratorUtilities {
         return instanceDate;
     }
 
-
-    /**
-     * Move file into DownloadDirectory folder corresponding to release number.
-     * @param targetDirectory -- String, where the file will be moved to.
-     * @throws IOException -- If file or targetDirectory do not exist, this will be thrown.
-     */
-    public static void moveFile(String targetDirectory) throws IOException {
-        String targetFilepath = targetDirectory + GOA_FILENAME + ".gz";
-        Files.move(Paths.get(GOA_FILENAME + ".gz"), Paths.get(targetFilepath), StandardCopyOption.REPLACE_EXISTING);
-    }
-
     static String getTaxonIdentifier(GKInstance protein) throws Exception {
         GKInstance speciesInst = (GKInstance) protein.getAttributeValue(ReactomeJavaConstants.species);
 

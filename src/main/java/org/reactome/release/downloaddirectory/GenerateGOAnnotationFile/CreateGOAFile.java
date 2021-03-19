@@ -6,10 +6,16 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 import org.gk.persistence.MySQLAdaptor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorConstants.GOA_FILENAME;
+
 /**
- *  Generates gene_association.reactome file from all curated ReactionlikeEvents in the database.
+ * Generates gene_association.reactome file from all curated ReactionlikeEvents in the database.
  * @author jcook
  */
 public class CreateGOAFile {
@@ -34,8 +40,9 @@ public class CreateGOAFile {
                 BiologicalProcessAnnotationBuilder.processBiologicalFunctions(reactionInst);
             }
         }
+
         GOAGeneratorUtilities.outputGOAFile();
-        GOAGeneratorUtilities.moveFile(releaseNumber + "/");
+        moveFile(GOA_FILENAME + ".gz", releaseNumber + "/");
         logger.info("Finished generating gene_association.reactome");
     }
 
@@ -50,5 +57,9 @@ public class CreateGOAFile {
 
     private static boolean isElectronicallyInferred(GKInstance reactionInst) throws Exception {
         return reactionInst.getAttributeValue(ReactomeJavaConstants.evidenceType) != null;
+    }
+
+    private static void moveFile(String sourceFile, String targetDirectory) throws IOException {
+        Files.move(Paths.get(sourceFile), Paths.get(targetDirectory, sourceFile), StandardCopyOption.REPLACE_EXISTING);
     }
 }
