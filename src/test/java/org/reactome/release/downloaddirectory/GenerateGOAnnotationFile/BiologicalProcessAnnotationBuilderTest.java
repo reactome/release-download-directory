@@ -62,7 +62,7 @@ public class BiologicalProcessAnnotationBuilderTest {
             .thenReturn(mockSpeciesInst);
         Mockito.when(GOAGeneratorUtilities.getGOAnnotatableProteinsFromCatalystActivity(mockCatalystInst))
             .thenReturn(new HashSet<>(mockMemberSet));
-        Mockito.when(GOAGeneratorUtilities.checkProteinForDisqualification(mockCatalystPEMemberInst))
+        Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockCatalystPEMemberInst))
             .thenReturn("");
         Mockito.when(GOAGeneratorUtilities.getReferenceEntityFromProtein(mockCatalystPEMemberInst))
             .thenCallRealMethod();
@@ -115,7 +115,7 @@ public class BiologicalProcessAnnotationBuilderTest {
             .thenReturn(mockSpeciesInst);
         Mockito.when(GOAGeneratorUtilities.getGOAnnotatableProteinsFromCatalystActivity(mockCatalystInst))
             .thenReturn(mockProteinSet);
-        Mockito.when(GOAGeneratorUtilities.checkProteinForDisqualification(mockProteinInst))
+        Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockProteinInst))
             .thenReturn("");
         Mockito.when(GOAGeneratorUtilities.getReferenceEntityFromProtein(mockProteinInst))
             .thenCallRealMethod();

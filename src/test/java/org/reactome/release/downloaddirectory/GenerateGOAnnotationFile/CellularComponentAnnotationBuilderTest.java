@@ -115,7 +115,7 @@ public class CellularComponentAnnotationBuilderTest {
         mockProteinToReturnMockReferenceEntity();
 
         Mockito.when(GOAGeneratorUtilities.isValidProtein(mockProteinInst)).thenReturn(true);
-        Mockito.when(GOAGeneratorUtilities.checkProteinForDisqualification(mockProteinInst)).thenCallRealMethod();
+        Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockProteinInst)).thenCallRealMethod();
         Mockito.when(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockProteinInst)).thenCallRealMethod();
 
         List<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
@@ -145,7 +145,7 @@ public class CellularComponentAnnotationBuilderTest {
     }
 
     private void mockProteinToReturnNoDisqualificationsForAnnotation() throws Exception {
-        Mockito.when(GOAGeneratorUtilities.checkProteinForDisqualification(mockProteinInst)).thenReturn("");
+        Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockProteinInst)).thenReturn("");
     }
 
     private void mockProteinToReturnMockReferenceEntity() throws Exception {

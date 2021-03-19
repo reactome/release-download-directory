@@ -6,7 +6,8 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorConstants.*;
-import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.*;
+import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getGOAnnotatableProteinsFromCatalystActivity;
+import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification;
 
 import java.util.*;
 
@@ -25,11 +26,11 @@ public class MolecularFunctionAnnotationBuilder {
 
         for (GKInstance catalystActivity : getCatalystActivitiesWithAnActivityValue(reactionlikeEvent)) {
             for (GKInstance protein : getGOAnnotatableProteinsFromCatalystActivity(catalystActivity)) {
-                String issueDisqualifyingProtein = checkProteinForDisqualification(protein);
-                if (issueDisqualifyingProtein.isEmpty()) {
+                String proteinDisqualificationMessage = getAnyIssueForAnnotationDisqualification(protein);
+                if (proteinDisqualificationMessage.isEmpty()) {
                     goaLines.addAll(generateGOMolecularFunctionLines(catalystActivity, protein, reactionlikeEvent));
                 } else {
-                    logger.warn(issueDisqualifyingProtein);
+                    logger.warn(proteinDisqualificationMessage);
                 }
             }
         }

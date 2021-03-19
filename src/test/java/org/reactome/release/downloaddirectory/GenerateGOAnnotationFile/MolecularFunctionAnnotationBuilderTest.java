@@ -88,7 +88,7 @@ public class MolecularFunctionAnnotationBuilderTest {
         Mockito.when(mockSchemaClass.isa(ReactomeJavaConstants.EntityWithAccessionedSequence)).thenReturn(true);
         Mockito.when(mockActiveUnitInst.getAttributeValue(ReactomeJavaConstants.referenceEntity)).thenReturn(mockReferenceEntityInst);
         Mockito.when(mockActiveUnitInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
-        Mockito.when(GOAGeneratorUtilities.checkProteinForDisqualification(mockActiveUnitInst)).thenReturn("");
+        Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockActiveUnitInst)).thenReturn("");
         Mockito.when(GOAGeneratorUtilities.isValidProtein(mockActiveUnitInst)).thenReturn(true);
         Mockito.when(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockActiveUnitInst)).thenReturn(false);
         Mockito.when(GOAGeneratorUtilities.getReferenceEntityFromProtein(mockActiveUnitInst)).thenCallRealMethod();
@@ -134,7 +134,7 @@ public class MolecularFunctionAnnotationBuilderTest {
         Mockito.when(mockSchemaClass.isa(ReactomeJavaConstants.EntityWithAccessionedSequence)).thenReturn(true);
         Mockito.when(mockActiveUnitInst.getAttributeValue(ReactomeJavaConstants.referenceEntity)).thenReturn(mockReferenceEntityInst);
         Mockito.when(mockActiveUnitInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
-        Mockito.when(GOAGeneratorUtilities.checkProteinForDisqualification(mockActiveUnitInst)).thenReturn("");
+        Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockActiveUnitInst)).thenReturn("");
         Mockito.when(GOAGeneratorUtilities.isValidProtein(mockActiveUnitInst)).thenReturn(true);
         Mockito.when(GOAGeneratorUtilities.getReferenceEntityFromProtein(mockActiveUnitInst)).thenCallRealMethod();
         Mockito.when(GOAGeneratorUtilities.getTaxonIdentifier(mockActiveUnitInst)).thenCallRealMethod();

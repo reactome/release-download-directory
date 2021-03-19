@@ -6,7 +6,7 @@ import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;
 
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorConstants.*;
-import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.checkProteinForDisqualification;
+import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getGOAnnotatableProteinsFromCatalystActivity;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getReactomeIdentifier;
 
@@ -48,7 +48,7 @@ public class BiologicalProcessAnnotationBuilder {
         throws Exception {
         List<String> goaLines = new ArrayList<>();
         for (GKInstance protein : proteins) {
-            String issueDisqualifyingProtein = checkProteinForDisqualification(protein);
+            String issueDisqualifyingProtein = getAnyIssueForAnnotationDisqualification(protein);
             if (issueDisqualifyingProtein.isEmpty()) {
                 goaLines.addAll(getGOBiologicalProcessLine(protein, reaction));
             } else {

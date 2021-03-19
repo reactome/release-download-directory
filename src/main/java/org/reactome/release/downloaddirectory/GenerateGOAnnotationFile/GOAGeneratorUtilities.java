@@ -42,7 +42,19 @@ public class GOAGeneratorUtilities {
     }
 
 
-    public static String checkProteinForDisqualification(GKInstance protein) throws Exception {
+    /**
+     * Checks the protein to determine if it is invalid (no species or not from UniProt) or has a species that is one
+     * in a pre-determined list of microbial species (C. trachomatis, E. coli, N. meningitidis, S. typhimurium,
+     * S. aureus, and T. gondii).
+     *
+     * Returns a String describing the first issue found or an empty String if there is no issue.
+     *
+     * @param protein Protein to check for issue disqualifying it for using in GAF annotation
+     * @return String describing first issue found or an empty String if no issue.
+     * @throws Exception Thrown if there is a problem in retrieving information from the database for species or
+     * reference database
+     */
+    public static String getAnyIssueForAnnotationDisqualification(GKInstance protein) throws Exception {
         String proteinIssue = "";
         if (!isValidProtein(protein)) {
             proteinIssue = protein.getExtendedDisplayName() + " is an invalid protein, skipping GO annotation";

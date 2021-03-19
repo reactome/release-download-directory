@@ -8,7 +8,7 @@ import org.gk.model.InstanceUtilities;
 import org.gk.model.ReactomeJavaConstants;
 
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorConstants.*;
-import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.checkProteinForDisqualification;
+import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getReactomeIdentifier;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getTaxonIdentifier;
 
@@ -37,7 +37,7 @@ public class CellularComponentAnnotationBuilder {
         // First retrieve proteins, then build GO annotation
         for (GKInstance protein : retrieveProteins(reactionlikeEvent)) {
             // Check if the protein has any disqualifying attributes.
-            String issueDisqualifyingProtein = checkProteinForCellularComponentDisqualification(protein);
+            String issueDisqualifyingProtein = getAnyIssueForCellularComponentDisqualification(protein);
             if (issueDisqualifyingProtein.isEmpty()) {
                 String goaLine = generateGOCellularCompartmentLine(protein, reactionlikeEvent);
                 if (!goaLine.isEmpty()) {
@@ -121,8 +121,8 @@ public class CellularComponentAnnotationBuilder {
         return new ClassAttributeFollowingInstruction(className, classAttributes, reverseClassAttributes);
     }
 
-    private static String checkProteinForCellularComponentDisqualification(GKInstance protein) throws Exception {
-        String issueDisqualifyingProtein = checkProteinForDisqualification(protein);
+    private static String getAnyIssueForCellularComponentDisqualification(GKInstance protein) throws Exception {
+        String issueDisqualifyingProtein = getAnyIssueForAnnotationDisqualification(protein);
         if (issueDisqualifyingProtein.isEmpty() && hasSpeciesWithAlternativeGOComponent(protein)) {
             issueDisqualifyingProtein = protein.getExtendedDisplayName() + " is from a species with an alternative " +
                 "GO compartment, skipping GO annotation";
