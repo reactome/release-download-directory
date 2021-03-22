@@ -10,7 +10,6 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +49,8 @@ public class GOAGeneratorUtilitiesTest {
 
     @Test
     public void proteinWithSpeciesAndFromUniProtIsValid() throws Exception {
+        mockProteinAsEWAS(mockProteinInst);
+
         Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
         Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.referenceEntity)).thenReturn(mockReferenceEntityInst);
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDatabaseInst);
@@ -67,6 +68,8 @@ public class GOAGeneratorUtilitiesTest {
 
     @Test
     public void proteinNotFromUniProtIsNotValid() throws Exception {
+        mockProteinAsEWAS(mockProteinInst);
+
         Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.referenceDatabase)).thenReturn(mockRefDatabaseInst);
         Mockito.when(mockRefDatabaseInst.getDisplayName()).thenReturn("Database other than UniProt");
@@ -76,11 +79,12 @@ public class GOAGeneratorUtilitiesTest {
 
     @Test
     public void generateGOALineTest() throws Exception {
+        mockProteinAsEWAS(mockProteinInst);
+        mockTaxonIdentifierRetrieval("54321A");
+
         Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.referenceEntity)).thenReturn(mockReferenceEntityInst);
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("ABCD1234");
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.geneName)).thenReturn("ABCD1");
-
-        mockTaxonIdentifierRetrieval("54321A");
 
         String goaLine = GOAGeneratorUtilities.generateGOALine(
             mockProteinInst,
@@ -98,32 +102,45 @@ public class GOAGeneratorUtilitiesTest {
     public void hasExcludedMicrobialSpeciesIsTrueForMicrobialSpeciesToExclude() throws Exception {
         final String actualExcludedMicrobialSpeciesTaxonIdentifier = C_TRACHOMATIS_CROSS_REFERENCE;
 
+        mockProteinAsEWAS(mockProteinInst);
         mockTaxonIdentifierRetrieval(actualExcludedMicrobialSpeciesTaxonIdentifier);
-        assertTrue(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockProteinInst));
+
+        assertThat(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockProteinInst), is(equalTo(true)));
     }
 
     @Test
     public void hasExcludedMicrobialSpeciesIsFalseForUnknownMicrobialSpecies() throws Exception {
         final String fakeMicrobialSpeciesTaxonIdentifier = "812";
 
+        mockProteinAsEWAS(mockProteinInst);
         mockTaxonIdentifierRetrieval(fakeMicrobialSpeciesTaxonIdentifier);
+
         assertThat(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockProteinInst), is(equalTo(false)));
     }
 
     @Test
     public void assignDateForGOALineTest() throws Exception {
-
         mockModifiedSet.add(mockModifiedInst);
+
         Mockito.when(mockReactionInst.getAttributeValuesList(ReactomeJavaConstants.modified)).thenReturn(mockModifiedSet);
         Mockito.when(mockModifiedInst.getAttributeValue(ReactomeJavaConstants.dateTime)).thenReturn("2019-01-01 01:01:01.0");
-        int testDate = GOAGeneratorUtilities.assignDateForGOALine(mockReactionInst, testGOALine);
 
-        assertEquals(20190101, testDate);
+        GOAGeneratorUtilities.assignDateForGOALine(mockReactionInst, testGOALine);
+        String testDate = GOAGeneratorUtilities.getDateForGOALine(testGOALine);
+
+        assertThat(testDate, is(equalTo("20190101")));
     }
 
     private void mockTaxonIdentifierRetrieval(String taxonIdentifier) throws Exception {
         Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
         Mockito.when(mockSpeciesInst.getAttributeValue(ReactomeJavaConstants.crossReference)).thenReturn(mockCrossReferenceInst);
         Mockito.when(mockCrossReferenceInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn(taxonIdentifier);
+    }
+
+    private void mockProteinAsEWAS(GKInstance mockProteinInst) {
+        SchemaClass mockSchemaClass = Mockito.mock(SchemaClass.class);
+
+        Mockito.when(mockProteinInst.getSchemClass()).thenReturn(mockSchemaClass);
+        Mockito.when(mockSchemaClass.isa(ReactomeJavaConstants.EntityWithAccessionedSequence)).thenReturn(true);
     }
 }
