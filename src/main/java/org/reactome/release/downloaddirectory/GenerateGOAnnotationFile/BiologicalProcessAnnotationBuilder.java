@@ -26,11 +26,11 @@ public class BiologicalProcessAnnotationBuilder {
      * @param reaction -- GKInstance from ReactionlikeEvent class
      * @throws Exception -- MySQLAdaptor exception
      */
-    public static List<String> processBiologicalFunctions(GKInstance reaction) throws Exception {
+    public static Set<String> processBiologicalFunctions(GKInstance reaction) throws Exception {
         Collection<GKInstance> catalystInstances = reaction.getAttributeValuesList(
             ReactomeJavaConstants.catalystActivity
         );
-        List<String> goaLines = new ArrayList<>();
+        Set<String> goaLines = new LinkedHashSet<>();
         for (GKInstance catalystInst : catalystInstances) {
             Set<GKInstance> proteinInstances = getGOAnnotatableProteinsFromCatalystActivity(catalystInst);
             goaLines.addAll(processProteins(proteinInstances, reaction));
@@ -64,10 +64,11 @@ public class BiologicalProcessAnnotationBuilder {
      * any.
      * @param protein -- GKInstance, Protein instance.
      * @param reaction -- GKInstance, parent reaction instance.
+     * @return Set of Biological Process annotations
      * @throws Exception -- MySQLAdaptor exception.
      */
-    private static List<String> getGOBiologicalProcessLine(GKInstance protein, GKInstance reaction) throws Exception {
-        List<String> goaLines = new ArrayList<>();
+    private static Set<String> getGOBiologicalProcessLine(GKInstance protein, GKInstance reaction) throws Exception {
+        Set<String> goaLines = new LinkedHashSet<>();
         for (Map<String, String> biologicalProcessAccession : getGOBiologicalProcessAccessions(reaction)) {
             String goaLine = GOAGeneratorUtilities.generateGOALine(
                 protein,

@@ -92,10 +92,10 @@ public class BiologicalProcessAnnotationBuilderTest {
             "REACTOME:1234",
             GOAGeneratorConstants.TRACEABLE_AUTHOR_STATEMENT_CODE
         )).thenCallRealMethod();
-        List<String> goaLines = BiologicalProcessAnnotationBuilder.processBiologicalFunctions(mockReactionInst);
+        Set<String> goaLines = BiologicalProcessAnnotationBuilder.processBiologicalFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(1)));
-        assertThat(goaLines.get(0), is((equalTo(
+        assertThat(goaLines.iterator().next(), is((equalTo(
             "UniProtKB\tR1234\tR5678\tinvolved_in\tGO:1234\tREACTOME:1234\tTAS\t\tP\t\t\tprotein\ttaxon:1234")
         )));
     }
@@ -144,10 +144,10 @@ public class BiologicalProcessAnnotationBuilderTest {
             "REACTOME:1234",
             GOAGeneratorConstants.TRACEABLE_AUTHOR_STATEMENT_CODE
         )).thenCallRealMethod();
-        List<String> goaLines = BiologicalProcessAnnotationBuilder.processBiologicalFunctions(mockReactionInst);
+        Set<String> goaLines = BiologicalProcessAnnotationBuilder.processBiologicalFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(1)));
-        assertThat(goaLines.get(0), is((equalTo(
+        assertThat(goaLines.iterator().next(), is((equalTo(
             "UniProtKB\tR1234\tR5678\tinvolved_in\tGO:1234\tREACTOME:1234\tTAS\t\tP\t\t\tprotein\ttaxon:1234")
         )));
     }
