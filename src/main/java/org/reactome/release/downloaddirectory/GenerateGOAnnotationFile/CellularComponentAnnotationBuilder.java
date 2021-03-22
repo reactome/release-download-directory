@@ -57,7 +57,7 @@ public class CellularComponentAnnotationBuilder {
      * @return -- Set of GKInstances output from the AttributeQueryRequest.
      * @throws Exception -- MySQLAdaptor exception.
      */
-    static Set<GKInstance> retrieveProteins(GKInstance reactionlikeEvent) throws Exception {
+    private static Set<GKInstance> retrieveProteins(GKInstance reactionlikeEvent) throws Exception {
         // All EWAS' associated with each of the classes in the instructions will be output for this ReactionlikeEvent.
         String[] outClasses = new String[]{ReactomeJavaConstants.EntityWithAccessionedSequence};
         return InstanceUtilities.followInstanceAttributes(
