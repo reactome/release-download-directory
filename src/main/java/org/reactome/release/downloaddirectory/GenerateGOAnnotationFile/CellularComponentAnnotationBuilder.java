@@ -51,7 +51,7 @@ public class CellularComponentAnnotationBuilder {
     }
 
     /**
-     * Performs an AttributeQueryRequest on the incoming reaction instance. This will retrieve all protein's
+     * Performs an AttributeQueryRequest on the incoming reaction instance. This will retrieve all proteins
      * affiliated with the Reaction.
      * @param reactionlikeEvent -- GKInstance from ReactionlikeEvent class.
      * @return -- Set of GKInstances output from the AttributeQueryRequest.
