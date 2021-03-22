@@ -216,7 +216,9 @@ public class GOAGeneratorUtilities {
      * Returns the value for the 'secondaryIdentifier' column in the GOA line.
      * @param protein -- GKInstance, protein from which to get a secondary identifier.
      * @return -- String, value taken from the secondaryIdentifier, geneName or identifier attributes, whichever is
-     * not null.
+     * not null.  NOTE:  This method of obtaining a secondary identifier is only used in the GO association file
+     * generation.  It is a secondary identifier for GO and not exactly equivalent for the secondary identifier for
+     * Reference Gene Products in Reactome
      * @throws Exception -- MySQLAdaptor exception.
      */
     static String getSecondaryIdentifier(GKInstance protein) throws Exception {
