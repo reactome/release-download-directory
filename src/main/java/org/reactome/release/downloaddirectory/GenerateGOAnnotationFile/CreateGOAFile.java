@@ -54,8 +54,8 @@ public class CreateGOAFile {
     }
 
     @SuppressWarnings("unchecked")
-    private static List<GKInstance> getReactionlikeEvents(MySQLAdaptor dbAdaptor) throws Exception {
-        return (List<GKInstance>) dbAdaptor.fetchInstancesByClass(ReactomeJavaConstants.ReactionlikeEvent);
+    private static Collection<GKInstance> getReactionlikeEvents(MySQLAdaptor dbAdaptor) throws Exception {
+        return dbAdaptor.fetchInstancesByClass(ReactomeJavaConstants.ReactionlikeEvent);
     }
 
     // Parent method that houses electronically and manually inferred instance checks.
