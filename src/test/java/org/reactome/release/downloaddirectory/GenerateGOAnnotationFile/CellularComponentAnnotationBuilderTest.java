@@ -72,10 +72,10 @@ public class CellularComponentAnnotationBuilderTest {
             GOAGeneratorConstants.TRACEABLE_AUTHOR_STATEMENT_CODE
         )).thenCallRealMethod();
 
-        List<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
+        Set<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(1)));
-        assertThat(goaLines.get(0), is(equalTo(expectedCellularComponentGOALine)));
+        assertThat(goaLines.iterator().next(), is(equalTo(expectedCellularComponentGOALine)));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class CellularComponentAnnotationBuilderTest {
         mockProteinToReturnNoDisqualificationsForAnnotation();
         mockProteinCompartmentToReturnGOAccession(dummyGOAccession);
 
-        List<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
+        Set<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(0)));
     }
@@ -100,7 +100,7 @@ public class CellularComponentAnnotationBuilderTest {
         mockProteinToReturnNoDisqualificationsForAnnotation();
         Mockito.when(mockProteinInst.getAttributeValue(ReactomeJavaConstants.compartment)).thenReturn(null);
 
-        List<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
+        Set<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(0)));
     }
@@ -118,7 +118,7 @@ public class CellularComponentAnnotationBuilderTest {
         Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockProteinInst)).thenCallRealMethod();
         Mockito.when(GOAGeneratorUtilities.hasExcludedMicrobialSpecies(mockProteinInst)).thenCallRealMethod();
 
-        List<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
+        Set<String> goaLines = CellularComponentAnnotationBuilder.processCellularComponents(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(0)));
     }

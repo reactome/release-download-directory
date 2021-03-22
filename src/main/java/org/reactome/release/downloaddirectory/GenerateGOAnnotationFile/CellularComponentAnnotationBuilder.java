@@ -30,10 +30,11 @@ public class CellularComponentAnnotationBuilder {
      * Then iterates through each retrieved protein, filtering out any that are invalid or are from the excluded
      * species.
      * @param reactionlikeEvent -- GKInstance from ReactionlikeEvent class.
+     * @return Set of Cellular Component annotations
      * @throws Exception -- MySQLAdaptor exception.
      */
-    public static List<String> processCellularComponents(GKInstance reactionlikeEvent) throws Exception {
-        List<String> goaLines = new ArrayList<>();
+    public static Set<String> processCellularComponents(GKInstance reactionlikeEvent) throws Exception {
+        Set<String> goaLines = new LinkedHashSet<>();
         // First retrieve proteins, then build GO annotation
         for (GKInstance protein : retrieveProteins(reactionlikeEvent)) {
             // Check if the protein has any disqualifying attributes.
