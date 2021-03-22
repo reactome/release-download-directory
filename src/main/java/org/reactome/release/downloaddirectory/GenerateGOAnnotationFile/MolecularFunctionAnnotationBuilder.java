@@ -8,6 +8,7 @@ import org.gk.model.ReactomeJavaConstants;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorConstants.*;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getGOAnnotatableProteinsFromCatalystActivity;
 import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification;
+import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GOAGeneratorUtilities.getReactomeIdentifier;
 
 import java.util.*;
 
@@ -19,10 +20,11 @@ public class MolecularFunctionAnnotationBuilder {
      * Initial Molecular Function annotations method that iterates through and validates the reaction's catalyst
      * instances, if any exist.
      * @param reactionlikeEvent -- GKInstance from ReactionlikeEvent class.
+     * @return Set of Molecular Function annotations
      * @throws Exception -- MySQLAdaptor exception.
      */
-    public static List<String> processMolecularFunctions(GKInstance reactionlikeEvent) throws Exception {
-        List<String> goaLines = new ArrayList<>();
+    public static Set<String> processMolecularFunctions(GKInstance reactionlikeEvent) throws Exception {
+        Set<String> goaLines = new LinkedHashSet<>();
 
         for (GKInstance catalystActivity : getCatalystActivitiesWithAnActivityValue(reactionlikeEvent)) {
             for (GKInstance protein : getGOAnnotatableProteinsFromCatalystActivity(catalystActivity)) {
@@ -60,10 +62,9 @@ public class MolecularFunctionAnnotationBuilder {
         if (!pubMedIdentifiers.isEmpty()) {
             return generateGOMolecularFunctionLinesForLiteratureReferences(protein, catalystInst, pubMedIdentifiers);
         } else {
-            String reactomeIdentifier =
-                REACTOME_IDENTIFIER_PREFIX + GOAGeneratorUtilities.getStableIdentifierIdentifier(reactionInst);
-
-            return generateGOMolecularFunctionLinesForReactomeReferences(protein, catalystInst, reactomeIdentifier);
+            return generateGOMolecularFunctionLinesForReactomeReferences(
+                protein, catalystInst, getReactomeIdentifier(reactionInst)
+            );
         }
     }
 

@@ -13,8 +13,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.util.*;
 
@@ -113,10 +111,10 @@ public class MolecularFunctionAnnotationBuilderTest {
                 "PMID:1234",
                 GOAGeneratorConstants.INFERRED_FROM_EXPERIMENT_CODE
         )).thenCallRealMethod();
-        List<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
+        Set<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(1)));
-        assertThat(goaLines.get(0), is((equalTo("UniProtKB\tR1234\tR5678\tenables\tGO:1234\tPMID:1234\tEXP\t\tF\t\t\tprotein\ttaxon:1234"))));
+        assertThat(goaLines.iterator().next(), is((equalTo("UniProtKB\tR1234\tR5678\tenables\tGO:1234\tPMID:1234\tEXP\t\tF\t\t\tprotein\ttaxon:1234"))));
     }
 
     @Test
@@ -126,24 +124,17 @@ public class MolecularFunctionAnnotationBuilderTest {
         mockActiveUnitSet.add(mockActiveUnitInst);
 
         Mockito.when(mockReactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity)).thenReturn(mockCatalystActivitySet);
-        Mockito.when(mockCatalystInst.getAttributeValue(ReactomeJavaConstants.physicalEntity)).thenReturn(mockCatalystPEInst);
-        Mockito.when(mockCatalystInst.getAttributeValuesList(ReactomeJavaConstants.activeUnit)).thenReturn(mockActiveUnitSet);
-        Mockito.when(mockCatalystInst.getAttributeValue(ReactomeJavaConstants.activeUnit)).thenReturn(mockActiveUnitInst);
         Mockito.when(GOAGeneratorUtilities.getGOAnnotatableProteinsFromCatalystActivity(mockCatalystInst)).thenReturn(new HashSet<>(mockActiveUnitSet));
-        Mockito.when(mockActiveUnitInst.getSchemClass()).thenReturn(mockSchemaClass);
-        Mockito.when(mockSchemaClass.isa(ReactomeJavaConstants.EntityWithAccessionedSequence)).thenReturn(true);
         Mockito.when(mockActiveUnitInst.getAttributeValue(ReactomeJavaConstants.referenceEntity)).thenReturn(mockReferenceEntityInst);
         Mockito.when(mockActiveUnitInst.getAttributeValue(ReactomeJavaConstants.species)).thenReturn(mockSpeciesInst);
         Mockito.when(GOAGeneratorUtilities.getAnyIssueForAnnotationDisqualification(mockActiveUnitInst)).thenReturn("");
-        Mockito.when(GOAGeneratorUtilities.isValidProtein(mockActiveUnitInst)).thenReturn(true);
         Mockito.when(GOAGeneratorUtilities.getReferenceEntityFromProtein(mockActiveUnitInst)).thenCallRealMethod();
         Mockito.when(GOAGeneratorUtilities.getTaxonIdentifier(mockActiveUnitInst)).thenCallRealMethod();
+        Mockito.when(GOAGeneratorUtilities.getReactomeIdentifier(mockReactionInst)).thenCallRealMethod();
         Mockito.when(((GKInstance) mockSpeciesInst.getAttributeValue(ReactomeJavaConstants.crossReference))).thenReturn(mockCrossReferenceInst);
         Mockito.when(mockCrossReferenceInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("1234");
         Mockito.when(mockCatalystInst.getAttributeValue(ReactomeJavaConstants.activity)).thenReturn(mockGOMolecularFunctionInst);
         Mockito.when(mockGOMolecularFunctionInst.getAttributeValue(ReactomeJavaConstants.accession)).thenReturn("1234");
-        Mockito.when(mockReactionInst.getAttributeValue(ReactomeJavaConstants.stableIdentifier)).thenReturn(mockStableIdentifierInst);
-        Mockito.when(mockStableIdentifierInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("1234");
         Mockito.when(mockReferenceEntityInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("R1234");
         Mockito.when(GOAGeneratorUtilities.getSecondaryIdentifier(mockActiveUnitInst)).thenReturn("R5678");
         Mockito.when(GOAGeneratorUtilities.getStableIdentifierIdentifier(mockReactionInst)).thenReturn("1234");
@@ -155,10 +146,10 @@ public class MolecularFunctionAnnotationBuilderTest {
                 "REACTOME:1234",
                 GOAGeneratorConstants.TRACEABLE_AUTHOR_STATEMENT_CODE
         )).thenCallRealMethod();
-        List<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
+        Set<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(1)));
-        assertThat(goaLines.get(0), is((equalTo("UniProtKB\tR1234\tR5678\tenables\tGO:1234\tREACTOME:1234\tTAS\t\tF\t\t\tprotein\ttaxon:1234"))));
+        assertThat(goaLines.iterator().next(), is((equalTo("UniProtKB\tR1234\tR5678\tenables\tGO:1234\tREACTOME:1234\tTAS\t\tF\t\t\tprotein\ttaxon:1234"))));
     }
 
     @Test
@@ -166,7 +157,7 @@ public class MolecularFunctionAnnotationBuilderTest {
         mockCatalystActivitySet.add(mockCatalystInst);
 
         Mockito.when(mockReactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity)).thenReturn(mockCatalystActivitySet);
-        List<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
+        Set<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(0)));
     }
@@ -183,7 +174,7 @@ public class MolecularFunctionAnnotationBuilderTest {
         Mockito.when(mockSchemaClass.isa(ReactomeJavaConstants.EntitySet)).thenReturn(true);
         Mockito.when(mockActiveUnitInst.getAttributeValuesList(ReactomeJavaConstants.hasMember)).thenReturn(mockMemberSet);
         Mockito.when(mockMemberInst.getSchemClass()).thenReturn(mockSchemaClass);
-        List<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
+        Set<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(0)));
     }
@@ -191,6 +182,8 @@ public class MolecularFunctionAnnotationBuilderTest {
     @Test
     public void molecularFunctionNullCatalystActivityReturnsZeroLinesTest() throws Exception {
         mockLitRefSet.add(mockLitRefInst);
+
+        PowerMockito.mockStatic(GOAGeneratorUtilities.class);
 
         Mockito.when(mockReactionInst.getAttributeValuesList(ReactomeJavaConstants.catalystActivity)).thenReturn(mockCatalystActivitySet);
         Mockito.when(mockCatalystInst.getAttributeValue(ReactomeJavaConstants.physicalEntity)).thenReturn(mockCatalystPEInst);
@@ -204,7 +197,7 @@ public class MolecularFunctionAnnotationBuilderTest {
         Mockito.when(((GKInstance) mockSpeciesInst.getAttributeValue(ReactomeJavaConstants.crossReference))).thenReturn(mockCrossReferenceInst);
         Mockito.when(mockCrossReferenceInst.getAttributeValue(ReactomeJavaConstants.identifier)).thenReturn("1234");
         Mockito.when(mockCatalystInst.getAttributeValue(ReactomeJavaConstants.activity)).thenReturn(null);
-        List<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
+        Set<String> goaLines = MolecularFunctionAnnotationBuilder.processMolecularFunctions(mockReactionInst);
 
         assertThat(goaLines.size(), is(equalTo(0)));
     }
