@@ -121,6 +121,9 @@ public class CellularComponentAnnotationBuilder {
         return new ClassAttributeFollowingInstruction(className, classAttributes, reverseClassAttributes);
     }
 
+    // Possible issues are any generic issues as defined by "getAnyIssueForAnnotationDisqualification" or
+    // the protein having a species that has an alternate GO compartment (specific only to Cellular Component
+    // annotations and the species list defined above)
     private static String getAnyIssueForCellularComponentDisqualification(GKInstance protein) throws Exception {
         String issueDisqualifyingProtein = getAnyIssueForAnnotationDisqualification(protein);
         if (issueDisqualifyingProtein.isEmpty() && hasSpeciesWithAlternativeGOComponent(protein)) {
