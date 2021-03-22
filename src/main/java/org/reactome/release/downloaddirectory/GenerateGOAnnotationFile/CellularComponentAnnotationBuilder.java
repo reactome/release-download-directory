@@ -15,7 +15,6 @@ import static org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.GO
 import java.util.*;
 
 public class CellularComponentAnnotationBuilder {
-
     private static final Logger logger = LogManager.getLogger();
 
     // CrossReference IDs of species containing an alternative GO compartment, which do not receive a GO annotation:
@@ -23,6 +22,45 @@ public class CellularComponentAnnotationBuilder {
     private static final List<String> speciesWithAlternateGOCompartment = Arrays.asList(
         HIV_1_CROSS_REFERENCE, C_BOTULINUM_CROSS_REFERENCE, B_ANTHRACIS_CROSS_REFERENCE
     );
+
+    private static Map<String, List<String>> classToClassAttributesMapForObtainingProteins;
+
+    static {
+        classToClassAttributesMapForObtainingProteins = new HashMap<>();
+
+        classToClassAttributesMapForObtainingProteins.put(
+            ReactomeJavaConstants.Pathway,
+            Arrays.asList(ReactomeJavaConstants.hasEvent)
+        );
+        classToClassAttributesMapForObtainingProteins.put(
+            ReactomeJavaConstants.ReactionlikeEvent,
+            Arrays.asList(
+                ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity
+            )
+        );
+        classToClassAttributesMapForObtainingProteins.put(
+            ReactomeJavaConstants.Reaction,
+            Arrays.asList(
+                ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity
+            )
+        );
+        classToClassAttributesMapForObtainingProteins.put(
+            ReactomeJavaConstants.CatalystActivity,
+            Arrays.asList(ReactomeJavaConstants.physicalEntity)
+        );
+        classToClassAttributesMapForObtainingProteins.put(
+            ReactomeJavaConstants.Complex,
+            Arrays.asList(ReactomeJavaConstants.hasComponent)
+        );
+        classToClassAttributesMapForObtainingProteins.put(
+            ReactomeJavaConstants.EntitySet,
+            Arrays.asList(ReactomeJavaConstants.hasMember)
+        );
+        classToClassAttributesMapForObtainingProteins.put(
+            ReactomeJavaConstants.Polymer,
+            Arrays.asList(ReactomeJavaConstants.repeatedUnit)
+        );
+    }
 
     /**
      * Initial Cellular Compartment annotations method that first retrieves all proteins associated with the
@@ -68,50 +106,11 @@ public class CellularComponentAnnotationBuilder {
 
     private static List<ClassAttributeFollowingInstruction> getClassAttributeInstructionsToFollow() {
         List<ClassAttributeFollowingInstruction> classesToFollow = new ArrayList<>();
-        for (String className : getClassToClassAttributesMapForObtainingProteins().keySet()) {
-            List<String> classAttributes = getClassToClassAttributesMapForObtainingProteins().get(className);
+        for (String className : classToClassAttributesMapForObtainingProteins.keySet()) {
+            List<String> classAttributes = classToClassAttributesMapForObtainingProteins.get(className);
             classesToFollow.add(getClassAttributeFollowingInstruction(className, classAttributes));
         }
         return classesToFollow;
-    }
-
-    private static Map<String, List<String>> getClassToClassAttributesMapForObtainingProteins() {
-        Map<String, List<String>> classToClassAttributesForFollowingInstructions = new HashMap<>();
-
-        classToClassAttributesForFollowingInstructions.put(
-            ReactomeJavaConstants.Pathway,
-            Arrays.asList(ReactomeJavaConstants.hasEvent)
-        );
-        classToClassAttributesForFollowingInstructions.put(
-            ReactomeJavaConstants.ReactionlikeEvent,
-            Arrays.asList(
-                ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity
-            )
-        );
-        classToClassAttributesForFollowingInstructions.put(
-            ReactomeJavaConstants.Reaction,
-            Arrays.asList(
-                ReactomeJavaConstants.input, ReactomeJavaConstants.output, ReactomeJavaConstants.catalystActivity
-            )
-        );
-        classToClassAttributesForFollowingInstructions.put(
-            ReactomeJavaConstants.CatalystActivity,
-            Arrays.asList(ReactomeJavaConstants.physicalEntity)
-        );
-        classToClassAttributesForFollowingInstructions.put(
-            ReactomeJavaConstants.Complex,
-            Arrays.asList(ReactomeJavaConstants.hasComponent)
-        );
-        classToClassAttributesForFollowingInstructions.put(
-            ReactomeJavaConstants.EntitySet,
-            Arrays.asList(ReactomeJavaConstants.hasMember)
-        );
-        classToClassAttributesForFollowingInstructions.put(
-            ReactomeJavaConstants.Polymer,
-            Arrays.asList(ReactomeJavaConstants.repeatedUnit)
-        );
-
-        return classToClassAttributesForFollowingInstructions;
     }
 
     private static ClassAttributeFollowingInstruction getClassAttributeFollowingInstruction(
