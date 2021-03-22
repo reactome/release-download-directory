@@ -291,15 +291,16 @@ public class GOAGeneratorUtilities {
      * @throws IOException -- File writing/reading exceptions.
      */
     private static void gzipGOAFile(Path goaFilePath) throws IOException {
-        Path goaFilePathGZipped = Paths.get(goaFilePath.toAbsolutePath().toString() + ".gz");
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(new FileOutputStream(goaFilePathGZipped.toFile()));
-        try (FileInputStream fileInputStream = new FileInputStream(goaFilePath.toFile())) {
+        Path goaGzipFilePath = Paths.get(goaFilePath.toAbsolutePath().toString() + ".gz");
+        try (
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(new FileOutputStream(goaGzipFilePath.toFile()));
+            FileInputStream fileInputStream = new FileInputStream(goaFilePath.toFile())
+        ) {
             byte[] buffer = new byte[1024];
             int length;
-            while((length=fileInputStream.read(buffer)) != -1) {
+            while ((length = fileInputStream.read(buffer)) != -1) {
                 gzipOutputStream.write(buffer, 0, length);
             }
-            gzipOutputStream.close();
         }
     }
 
