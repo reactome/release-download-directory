@@ -28,6 +28,10 @@ public class GOAGeneratorUtilities {
     private static Map<String, Integer> dates = new HashMap<>();
     private static Set<String> goaLines = new HashSet<>();
 
+    private GOAGeneratorUtilities() {
+        // No-op constructor to ensure the class is used only by static access
+    }
+
     /**
      * Verifies existence of the protein's ReferenceEntity and Species, and that the ReferenceDatabase associated with
      * the ReferenceEntity is from UniProt.
