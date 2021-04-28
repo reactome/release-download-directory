@@ -54,10 +54,6 @@ pipeline {
 		        	script{
 					def releaseVersion = utils.getReleaseVersion()
 					def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
-//					dir("${releaseVersion}"){
-//						sh "tar -zcvf ${downloadDirectoryArchive} *"
-//					}
-//					sh "mv ${releaseVersion}/${downloadDirectoryArchive} ."
 					sh "tar -zcvf ${downloadDirectoryArchive} ${releaseVersion}"
 					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 					sh "rm -r ${releaseVersion}*"
