@@ -57,8 +57,8 @@ pipeline {
 //					dir("${releaseVersion}"){
 //						sh "tar -zcvf ${downloadDirectoryArchive} *"
 //					}
+//					sh "mv ${releaseVersion}/${downloadDirectoryArchive} ."
 					sh "tar -zcvf ${downloadDirectoryArchive} ${releaseVersion}"
-					sh "mv ${releaseVersion}/${downloadDirectoryArchive} ."
 					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 					sh "rm -r ${releaseVersion}*"
 		        	}
