@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -41,8 +42,8 @@ public class ProtegeExporter
 {
 	// The code in GKB::WebUtils always writes protege files to /tmp/ and it doesn't look like that is configurable,
 	// so we'll work in /tmp as well.
-	private static final String PROTEGE_ARCHIVE_PATH = "/tmp/protege_files.tar";
-	static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar", "/");
+	private static final String PROTEGE_ARCHIVE_PATH = "/tmp/protege_files.tar.gz";
+	static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar.gz", "/");
 
 	private static final Logger logger = LogManager.getLogger();
 	private String releaseDirectory;
@@ -286,7 +287,8 @@ public class ProtegeExporter
 	private void tarProtegeFiles()
 	{
 		try(FileOutputStream protegeTar = new FileOutputStream(PROTEGE_ARCHIVE_PATH);
-			TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(protegeTar);)
+			GzipCompressorOutputStream gzOut = new GzipCompressorOutputStream(protegeTar);
+			TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(gzOut);)
 		{
 			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach( protegeFile ->
 			{
@@ -296,7 +298,7 @@ public class ProtegeExporter
 				// 	2) it matches the pattern Reactome_pathway_.*\.tar\.gz
 				if (protegeFile.toFile().isFile() && protegeFile.getFileName().toString().matches("Reactome_pathway_.*\\.tar\\.gz"))
 				{
-					logger.info("Adding {} to protege_files.tar", protegeFile.toString());
+					logger.info("Adding {} to protege_files.tar.gz", protegeFile.toString());
 					addFileToTar(tarOutStream, protegeFile);
 				}
 			});
