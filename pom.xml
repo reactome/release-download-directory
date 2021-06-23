@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.reactome.release</groupId>
@@ -7,9 +9,15 @@
 	<version>1.0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>download-directory</name>
+	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Generation of files for the Reactome website download directory</description>
-	<url>https://reactome.org</url>
+	<url>https://github.com/reactome/release-download-directory</url>
+
+	<organization>
+		<name>Reactome</name>
+		<url>https://reactome.org</url>
+	</organization>
+
 	<licenses>
 		<license>
 			<name>GNU AFFERO GENERAL PUBLIC LICENSE</name>
@@ -19,10 +27,11 @@
 
 	<developers>
 		<developer>
+			<id>cookersjs</id>
 			<name>Justin Cook</name>
-			<email>justin.cook@oicr.on.ca</email>
-			<organization>Reactome</organization>
-			<organizationUrl>https://reactome.org</organizationUrl>
+			<roles>
+				<role>alumni</role>
+			</roles>
 		</developer>
 	</developers>
 
@@ -34,16 +43,42 @@
 	</scm>
 
 	<properties>
+		<!-- dependencies -->
+		<biopax.version>5.1.0</biopax.version>
+		<biopax.validator.version>4.0.0</biopax.validator.version>
+		<commons.compress.version>1.19</commons.compress.version>
+		<commons.io.version>2.4</commons.io.version>
+		<eclipse.jgit.version>4.8.0.201706111038-r</eclipse.jgit.version>
+		<hamcrest.version>2.1</hamcrest.version>
+		<jcl.over.slf4j.version>1.7.25</jcl.over.slf4j.version>
+		<jdom.version>1.1</jdom.version>
+		<json.simple.version>1.1.1</json.simple.version>
+		<junit.version>4.12</junit.version>
+		<log4j.version>2.11.0</log4j.version>
+		<logback.version>1.2.3</logback.version>
+		<mysql.connector.version>5.1.47</mysql.connector.version>
+		<powermock.version>1.6.5</powermock.version>
+		<reactome.pathway.exchange.version>1.0.1</reactome.pathway.exchange.version>
+		<reactome.release.common.lib.version>1.2.0</reactome.release.common.lib.version>
+		<spring.version>4.2.4.RELEASE</spring.version>
+
+		<!-- build -->
+		<jdk.version>1.8</jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- maven build and plugins -->
+		<maven.assembly.version>3.2.0</maven.assembly.version>
+		<maven.compiler.version>3.8.1</maven.compiler.version>
+		<maven.failsafe.version>2.22.2</maven.failsafe.version>
+		<maven.jar.version>3.2.0</maven.jar.version>
+		<maven.release.version>2.5.3</maven.release.version>
+		<maven.tidy.version>1.1.0</maven.tidy.version>
+
 		<!--
 		integration tests run by default when running the command "mvn verify"; can be overridden using the option
 		"-DskipITs=true"
 		-->
 		<skipITs>false</skipITs>
-
-		<spring.version>4.2.4.RELEASE</spring.version>
-		<biopax.version>5.1.0</biopax.version>
-		<powermock.version>1.6.5</powermock.version>
 	</properties>
 
 	<dependencies>
@@ -51,83 +86,98 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
+			<version>${logback.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
+			<version>${commons.io.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
-			<version>1.1.1</version>
+			<version>${json.simple.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.47</version>
+			<version>${mysql.connector.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
-			<version>1.19</version>
+			<version>${commons.compress.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.11.0</version>
+			<version>${log4j.version}</version>
 		</dependency>
+
 		<!-- release-common-lib must be before BioPAX dependencies to avoid conflict between libraries -->
 		<dependency>
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
-			<version>1.2.0</version>
+			<version>${reactome.release.common.lib.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.biopax.paxtools</groupId>
 			<artifactId>paxtools-core</artifactId>
 			<version>${biopax.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.biopax.paxtools</groupId>
 			<artifactId>paxtools-trove</artifactId>
 			<version>${biopax.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.biopax.validator</groupId>
 			<artifactId>biopax-validator</artifactId>
-			<version>4.0.0</version>
+			<version>${biopax.validator.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.eclipse.jgit</groupId>
 			<artifactId>org.eclipse.jgit</artifactId>
-			<version>4.8.0.201706111038-r</version>
+			<version>${eclipse.jgit.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
-			<version>1.1</version>
+			<version>${jdom.version}</version>
 		</dependency>
+
 		<!-- Locally installed pathway exchange jar -->
 		<dependency>
 			<groupId>org.reactome.pathway-exchange</groupId>
 			<artifactId>pathwayExchange</artifactId>
-			<version>1.0.1</version>
+			<version>${reactome.pathway.exchange.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
-			<version>1.7.25</version>
+			<version>${jcl.over.slf4j.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-instrument</artifactId>
@@ -138,21 +188,24 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
-			<version>2.1</version>
+			<version>${hamcrest.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-api-mockito</artifactId>
 			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
@@ -162,23 +215,24 @@
 	</dependencies>
 
 	<build>
-		<finalName>download-directory</finalName>
+		<finalName>${project.artifactId}</finalName>
+
 		<plugins>
 			<!-- sets the Java compiler version targeted by Maven -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>${maven.compiler.version}</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>${jdk.version}</source>
+					<target>${jdk.version}</target>
 				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>${maven.jar.version}</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -198,7 +252,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>${maven.assembly.version}</version>
 				<configuration>
 					<descriptors>
 						<descriptor>src/main/resources/assembly.xml</descriptor>
@@ -218,7 +272,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>${maven.failsafe.version}</version>
 				<executions>
 					<execution>
 						<id>integration-tests</id>
@@ -245,7 +299,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.3</version>
+				<version>${maven.release.version}</version>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<useReleaseProfile>false</useReleaseProfile>
@@ -262,7 +316,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>tidy-maven-plugin</artifactId>
-				<version>1.1.0</version>
+				<version>${maven.tidy.version}</version>
 				<executions>
 					<execution>
 						<id>validate</id>
