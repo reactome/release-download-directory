@@ -48,7 +48,7 @@ public class CreateGOAFile {
             }
         }
 
-        writeGOAFile(goaLines);
+        writeGOAFile(goaLines, releaseNumber);
         moveFile(GOA_FILENAME + ".gz", releaseNumber + "/");
         logger.info("Finished generating gene_association.reactome");
     }
@@ -75,15 +75,16 @@ public class CreateGOAFile {
      * Iterates through the lines in the 'goaLines' list, retrieves the date associated with that line and also adds
      * the 'Reactome' column before adding it to the gene_association.reactome file.
      * @param goaLines Gene Association File annotation lines to write to the file
+     * @param releaseNumber -- Reactome release version number
      * @throws IOException -- File writing/reading exceptions.
      */
-    private static void writeGOAFile(Set<String> goaLines) throws IOException {
+    private static void writeGOAFile(Set<String> goaLines, String releaseNumber) throws IOException {
         Path goaFilepath = Paths.get(GOA_FILENAME);
 
         Files.deleteIfExists(goaFilepath);
         Files.createFile(goaFilepath);
 
-        writeHeader(goaFilepath);
+        writeHeader(goaFilepath, releaseNumber);
 
         List<String> lines = goaLines.stream().sorted().map(
             line -> String.join("\t", line, getDateForGOALine(line), REACTOME_STRING, "","")
@@ -95,11 +96,12 @@ public class CreateGOAFile {
     }
 
 
-    private static void writeHeader(Path goaFilepath) throws IOException {
+    private static void writeHeader(Path goaFilepath, String releaseNumber) throws IOException {
         final String gafHeader = String.join(System.lineSeparator(),
-        "!gaf-version: 2.2",
-        "generated-by: Reactome",
-        "date-generated: " + getCurrentDateAsYYYYMMDD()
+            "!gaf-version: 2.2",
+            "generated-by: Reactome",
+            "date-generated: " + getCurrentDateAsYYYYMMDD(),
+            "Project-release: Version " + releaseNumber
         ).concat(System.lineSeparator());
 
         Files.write(goaFilepath, gafHeader.getBytes(), StandardOpenOption.APPEND);
