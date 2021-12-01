@@ -181,11 +181,12 @@
 				<version>3.2.0</version>
 				<configuration>
 					<archive>
-						<manifest>
-							<mainClass>org.reactome.release.downloaddirectory.Main</mainClass>
+						<manifestEntries>
+							<Multi-Release>true</Multi-Release>
+							<Main-Class>org.reactome.release.downloaddirectory.Main</Main-Class>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-						</manifest>
+						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
