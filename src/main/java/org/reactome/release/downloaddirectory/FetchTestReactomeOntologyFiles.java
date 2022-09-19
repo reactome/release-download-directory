@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory;
+package org.reactome.release.downloaddirectory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -79,7 +79,7 @@ public class FetchTestReactomeOntologyFiles {
 				line += "\n";
 
 				// Generate pins file
-				if (dateTimeCounter == 1 && pinsSwitch) { 
+				if (dateTimeCounter == 1 && pinsSwitch) {
 					if (line.contains("pprj_file_content")) {
 						line = "\n";
 						pinsSwitch = false;
@@ -109,11 +109,11 @@ public class FetchTestReactomeOntologyFiles {
 						line = "\n";
 					}
 
-					if (pprjSwitch) { 
+					if (pprjSwitch) {
 						if (line.startsWith(";") || line.startsWith("(") || line.startsWith(")") || line.startsWith("\n") || line.startsWith("\t")) {
 							Files.write(Paths.get(pprjFilename), line.getBytes(), StandardOpenOption.APPEND);
 						} else {
-							pprjSwitch = false; 
+							pprjSwitch = false;
 						}
 					}
 				}

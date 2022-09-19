@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory;
+package org.reactome.release.downloaddirectory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,7 +12,6 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gk.persistence.MySQLAdaptor;
 
 public class DatabaseDumps {
 	private static final Logger logger = LogManager.getLogger();

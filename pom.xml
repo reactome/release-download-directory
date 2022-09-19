@@ -1,17 +1,49 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>org.reactome.release</groupId>
-	<artifactId>downloadDirectory</artifactId>
-	<version>1.0.1</version>
+	<artifactId>download-directory</artifactId>
+	<version>1.0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>downloadDirectory</name>
+
+	<name>download-directory</name>
+	<description>Generation of files for the Reactome website download directory</description>
+	<url>https://reactome.org</url>
+	<licenses>
+		<license>
+			<name>GNU AFFERO GENERAL PUBLIC LICENSE</name>
+			<url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Justin Cook</name>
+			<email>justin.cook@oicr.on.ca</email>
+			<organization>Reactome</organization>
+			<organizationUrl>https://reactome.org</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/reactome/release-download-directory.git</connection>
+		<developerConnection>scm:git:ssh://github.com/reactome/release-download-directory.git</developerConnection>
+		<url>https://github.com/reactome/release-download-directory</url>
+		<tag>develop</tag>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!--
+		integration tests run by default when running the command "mvn verify"; can be overridden using the option
+		"-DskipITs=true"
+		-->
+		<skipITs>false</skipITs>
+
 		<spring.version>4.2.4.RELEASE</spring.version>
 		<biopax.version>5.1.0</biopax.version>
+		<powermock.version>1.6.5</powermock.version>
 	</properties>
 
 	<dependencies>
@@ -47,11 +79,11 @@
 			<artifactId>log4j-core</artifactId>
 			<version>2.11.0</version>
 		</dependency>
-		<!-- release-common-lib must be before biopax dependencies to avoid conflict between libraries -->
+		<!-- release-common-lib must be before BioPAX dependencies to avoid conflict between libraries -->
 		<dependency>
 			<groupId>org.reactome.release</groupId>
 			<artifactId>release-common-lib</artifactId>
-			<version>1.1.1-SNAPSHOT</version>
+			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.biopax.paxtools</groupId>
@@ -118,58 +150,126 @@
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-api-mockito</artifactId>
-			<version>1.6.5</version>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
-			<version>1.6.5</version>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
+		<finalName>download-directory</finalName>
 		<plugins>
+			<!-- sets the Java compiler version targeted by Maven -->
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>3.8.1</version>
 				<configuration>
-					<!--<release>8</release> -->
-					<source>8</source>
-					<target>8</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.2</version>
+				<version>3.2.0</version>
 				<configuration>
 					<archive>
-						<manifest>
-							<mainClass>org.reactome.release.downloadDirectory.Main</mainClass>
+						<manifestEntries>
+							<Multi-Release>true</Multi-Release>
+							<Main-Class>org.reactome.release.downloaddirectory.Main</Main-Class>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-						</manifest>
+						</manifestEntries>
 					</archive>
-					<finalName>downloadDirectory</finalName>
 				</configuration>
 			</plugin>
+
+			<!--
+			allows 'mvn clean compile assembly:single' command to create a jar with dependencies
+
+			execution section also allows 'mvn clean package' command to create two jars - with/without dependencies
+			-->
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.2.0</version>
 				<configuration>
-					<finalName>downloadDirectory</finalName>
 					<descriptors>
 						<descriptor>src/main/resources/assembly.xml</descriptor>
 					</descriptors>
 				</configuration>
 				<executions>
 					<execution>
-						<id>make-assembly</id>
-						<phase>package</phase>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
 						<goals>
 							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.22.2</version>
+				<executions>
+					<execution>
+						<id>integration-tests</id>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<!--
+							Default value is defined in the <properties> section and will be applied to integration
+							tests when running the command "mvn verify", but can be overwritten to either skip
+							or run integration tests with the command "mvn verify -DskipITs=[true|false]"
+							-->
+							<skipTests>${skipITs}</skipTests>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!--
+			allows 'mvn release' command to create a new release of the project
+			https://maven.apache.org/maven-release/maven-release-plugin/
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release</releaseProfiles>
+					<goals>deploy</goals>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
+
+			<!--
+			checks the POM file has the order specified by the POM Code Convention
+			http://maven.apache.org/developers/conventions/code.html#POM_Code_Convention
+			-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>tidy-maven-plugin</artifactId>
+				<version>1.1.0</version>
+				<executions>
+					<execution>
+						<id>validate</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
 						</goals>
 					</execution>
 				</executions>

@@ -1,24 +1,21 @@
-package org.reactome.release.downloadDirectory;
+package org.reactome.release.downloaddirectory;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
-import org.reactome.release.downloadDirectory.GenerateGOAnnotationFile.CreateGOAFile;
+import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOAFile;
 
 public class Main {
 	private static final Logger logger = LogManager.getLogger();
@@ -131,7 +128,7 @@ public class Main {
 			// This step iterates through all StableIdentifiers and maps them to the old Reactome ID in 'REACT_#####' format. Human instances are displayed first.
 			// Output: reactome_stable_ids.txt
 			try {
-				MapOldStableIds.execute(username, password, host, releaseNumber);
+				MapOldStableIds.execute(dbAdaptor, releaseNumber);
 			} catch (Exception e) {
 				failedSteps.add("MapOldStableIds");
 				e.printStackTrace();
@@ -146,16 +143,6 @@ public class Main {
 
 			} catch (Exception e) {
 				failedSteps.add("GenerateGOAnnotationFile");
-				e.printStackTrace();
-			}
-		}
-		if (stepsToRun.contains("models2pathways.tsv")) {
-			// This step copies the models2pathways.tsv file generated during the biomodels step of Release to the download_directory folder
-			logger.info("Copying models2pathways.tsv to release directory");
-			try {
-				Files.copy(Paths.get(releaseDirAbsolute + "biomodels/models2pathways.tsv"), Paths.get(releaseNumber + "/models2pathways.tsv"), StandardCopyOption.REPLACE_EXISTING);
-			} catch (Exception e) {
-				failedSteps.add("models2pathways.tsv");
 				e.printStackTrace();
 			}
 		}
@@ -189,24 +176,6 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-
-		// Move files to downloadDirectory release folder
-		/*
-		logger.info("Moving all generated files to " + releaseDownloadDirWithNumber);
-		File folder = new File(releaseNumber);
-		File[] releaseFiles = folder.listFiles();
-		if (releaseFiles != null) {
-			for (File releaseFile : releaseFiles)
-			{
-				if (releaseFile.isDirectory() && releaseFile.getName().equalsIgnoreCase("databases"))
-				{
-					FileUtils.deleteDirectory(new File(releaseDownloadDirWithNumber + "/databases"));
-				}
-
-				Files.move(Paths.get(releaseFile.toString()), Paths.get(releaseDownloadDirWithNumber + "/" + releaseFile.getName()), StandardCopyOption.REPLACE_EXISTING);
-			}
-		}
-		*/
 		if (failedSteps.size() > 0) {
 			String failedStepsString = StringUtils.join(failedSteps, ", ");
 			logger.warn("Errors were reported in the following step(s): " + failedStepsString + "\n");

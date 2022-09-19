@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory;
+package org.reactome.release.downloaddirectory;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

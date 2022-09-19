@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory;
+package org.reactome.release.downloaddirectory;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -42,7 +42,8 @@ public class ProtegeExporter
 	// The code in GKB::WebUtils always writes protege files to /tmp/ and it doesn't look like that is configurable,
 	// so we'll work in /tmp as well.
 	private static final String PROTEGE_ARCHIVE_PATH = "/tmp/protege_files.tar";
-	private static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar", "/");
+	static final String PROTEGE_FILES_DIR = PROTEGE_ARCHIVE_PATH.replace(".tar", "/");
+
 	private static final Logger logger = LogManager.getLogger();
 	private String releaseDirectory;
 	private int parallelism = ForkJoinPool.getCommonPoolParallelism();
@@ -51,12 +52,12 @@ public class ProtegeExporter
 	private String downloadDirectory;
 	private Set<Long> pathwayIdsToProcess = new HashSet<>();
 	private Set<String> speciesToProcess = new HashSet<>();
-	
+
 	public ProtegeExporter()
 	{
 		// Default no-arg consturctor.
 	}
-	
+
 	/**
 	 * Creates a ProtegeExporter. Various values needed for this exporter will be configured by passing in a Properties instance.
 	 * @param props - A Properties object that contains "protegeexporter.*" properties: "parallelism", "extraIncludes", "pathToWrapperScript", "filterIds", "filterSpecies".
@@ -77,24 +78,24 @@ public class ProtegeExporter
 			List<String> extraIncs = Arrays.asList(extraIncludeStr.split(","));
 			this.setExtraIncludes(extraIncs);
 		}
-		String pathToWrapper = props.getProperty(propsPrefix+".pathToWrapperScript");
+		String pathToWrapper = props.getProperty(propsPrefix+".pathToWrapperScript", "src/main/resources");
 		this.setPathToWrapperScript(pathToWrapper);
 		this.setDownloadDirectory(downloadDir);
-		
+
 		String filterIds = props.getProperty(propsPrefix+".filterIds");
 		if (filterIds != null && !filterIds.trim().isEmpty())
 		{
 			List<String> ids = Arrays.asList(filterIds.split(","));
 			this.setPathwayIdsToProcess( ids.stream().map(Long::valueOf).collect(Collectors.toSet()) );
 		}
-		
+
 		String filterSpecies = props.getProperty(propsPrefix+".filterSpecies");
 		if (filterSpecies != null && !filterSpecies.trim().isEmpty())
 		{
 			this.setSpeciesToProcess( new HashSet<>(Arrays.asList(filterSpecies.split(","))) );
 		}
 	}
-	
+
 	public void execute(MySQLAdaptor dba)
 	{
 		// Create the protege files.
@@ -117,14 +118,16 @@ public class ProtegeExporter
 				logger.info("{} pathways from the FrontPage to export in protege format.", pathways.size());
 
 				ForkJoinPool pool = new ForkJoinPool(this.parallelism);
-				
+
 				// Prepare a shutdown hook to shut down thread pool. Shutting down
 				// the child Perl processes may not be feasible, so just let the user
 				// know they could still be running.
 				Runtime.getRuntime().addShutdownHook(new Thread( () ->
 				{
-					logger.info("Shutting down thread pool. IF this program was terminated prematurely, there might still be orphan Perl processe runing."
-								+ " Check to see if any are still running, and kill them if necssary.");
+					logger.info("Shutting down thread pool.");
+					logger.warn("IF this program was terminated prematurely, there might still be orphan Perl " +
+						"processes running. Check to see if any are still running, and kill them if necessary."
+					);
 					pool.shutdownNow();
 				}));
 				// Filtering is in effect IF the set has something in it.
@@ -143,17 +146,17 @@ public class ProtegeExporter
 				pool.submit(() ->
 				{
 					// parallelStream should use the degree of parallelism set on the "pool" object.
-					pathways.parallelStream().forEach(pathway -> 
+					pathways.parallelStream().forEach(pathway ->
 					{
 						boolean processPathway = shouldPathwayBeProcessed(idFilterInEffect, speciesFilterInEffect, pathway);
-						
+
 						if (processPathway)
 						{
 							logger.info("Running protegeexport script for Pathway: {}", pathway.toString());
 							// include a normalized display_name in the output to make it easier to identify the contents of an archive.
 							String normalizedDisplayName = pathway.getDisplayName().toLowerCase().replace(" ", "_").replace("-", "_").replace("(", "").replace(")", "");
 							String fileName = "Reactome_pathway_" + pathway.getDBID() + "_" + normalizedDisplayName;
-							ProcessBuilder processBuilder = createProcessBuilder(pathway.getDBID().toString(), fileName);
+							ProcessBuilder processBuilder = createProcessBuilder(pathway.getDBID().toString(), fileName, dba);
 							Process process = null;
 							try
 							{
@@ -165,8 +168,11 @@ public class ProtegeExporter
 								logger.info("Finished generating protege files for {}; Elapsed time: {}; Exit code is {}", pathway.toString(), Duration.between(exportStart, exportEnd), exitCode);
 								if (exitCode == 0)
 								{
-									Files.createDirectories(Paths.get("/tmp/protege_files"));
+									Files.createDirectories(Paths.get(PROTEGE_FILES_DIR));
 									// Move the file to the protege_files, overwrite existing.
+									Files.delete(Paths.get("/tmp", fileName + ".pins"));
+									Files.delete(Paths.get("/tmp", fileName + ".pont"));
+									Files.delete(Paths.get("/tmp", fileName + ".pprj"));
 									Files.move(Paths.get("/tmp/"+fileName+".tar.gz"), Paths.get(PROTEGE_FILES_DIR+fileName+".tar.gz"), StandardCopyOption.REPLACE_EXISTING);
 								}
 								else
@@ -206,8 +212,8 @@ public class ProtegeExporter
 	 * Determine if a pathway should be processed. A pathway should be processed IF: <ul>
 	 * <li>An ID filter has been specified and the pathway's ID is in that set.</li>
 	 * <li>A species filter has been specified and the pathway's species is in that set.</li></ul>
-	 * If an ID filter has NOT been specified, then no filtering by ID will occurr. If a species filter has NOT be specified, then no filtering by species will occur.
-	 * If NO filters are specified, then this function will return true for any pathway. 
+	 * If an ID filter has NOT been specified, then no filtering by ID will occur. If a species filter has NOT be specified, then no filtering by species will occur.
+	 * If NO filters are specified, then this function will return true for any pathway.
 	 * @param idFilterInEffect
 	 * @param speciesFilterInEffect
 	 * @param pathway
@@ -247,33 +253,42 @@ public class ProtegeExporter
 	 * Create a process builder to run the protege export process.
 	 * @param pathwayId - the DB_ID of the Pathway to export.
 	 * @param fileName - This string will be used to name the output archive file that is created by protege export.
+	 * @param dba - the database from which the pathway originates
 	 * @return A populated ProcessBuilder that is ready to use.
 	 */
-	private ProcessBuilder createProcessBuilder(String pathwayId, String fileName)
+	private ProcessBuilder createProcessBuilder(String pathwayId, String fileName, MySQLAdaptor dba)
 	{
 		List<String> cmdArgs = new ArrayList<>();
 		cmdArgs.add("perl");
 		cmdArgs.addAll(this.extraIncludes);
-		cmdArgs.addAll(Arrays.asList("-I"+this.releaseDirectory+"/modules", "run_protege_exporter.pl", pathwayId, fileName));
+		cmdArgs.addAll(Arrays.asList("-I"+this.releaseDirectory+"/modules", "run_protege_exporter.pl",
+			"id=" + pathwayId,
+			"file_name=" + fileName,
+			"DB=" + dba.getDBName(),
+			"db_user=" + dba.getDBUser(),
+			"db_pass=" + dba.getDBPwd(),
+			"db_host=" + dba.getDBHost()
+		));
 		// Build the process.
 		ProcessBuilder processBuilder = new ProcessBuilder();
 		processBuilder.command(cmdArgs)
 					.directory(Paths.get(this.pathToWrapperScript).toFile())
 					.inheritIO();
-		logger.info("Command is: `{}`", String.join(" ", processBuilder.command()));
+		logger.info("Command is: `{}`",
+			String.join(" ", processBuilder.command()).replace("db_pass=" + dba.getDBPwd(), "db_pass=********")
+		);
 		return processBuilder;
 	}
 
 	/**
 	 * TARs the protege files.
-	 * @param pathToProtegeFiles The path to where the protege archive files are. They need to be collected into a single archive.
 	 */
 	private void tarProtegeFiles()
 	{
 		try(FileOutputStream protegeTar = new FileOutputStream(PROTEGE_ARCHIVE_PATH);
 			TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(protegeTar);)
 		{
-			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach( protegeFile -> 
+			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach( protegeFile ->
 			{
 				// Sanity check on the file: Since we're just iterating through a directory, there could be other stuff in there.
 				// Only continue if:
@@ -291,7 +306,7 @@ public class ProtegeExporter
 		{
 			e.printStackTrace();
 		}
-		
+
 		// Now that we're finished creating the tar file, move it to the download directory. Overwrite existing.
 		try
 		{
@@ -318,7 +333,7 @@ public class ProtegeExporter
 			TarArchiveEntry entry = new TarArchiveEntry(protegeFile.getFileName().toString());
 			entry.setSize(protegeFile.toFile().length());
 			tarOutStream.putArchiveEntry(entry);
-			
+
 			final int len = 1024;
 			byte[] buff = new byte[len];
 			boolean done = false;
@@ -331,11 +346,11 @@ public class ProtegeExporter
 				}
 				else
 				{
-				// If bytesRead + len > entrySize then an exception will be thrown, so always take min of len,bytesRead. 
+				// If bytesRead + len > entrySize then an exception will be thrown, so always take min of len,bytesRead.
 					tarOutStream.write(buff, 0, (int) Math.min(len, bytesRead));
 				}
 			}
-			
+
 			tarOutStream.closeArchiveEntry();
 			tarOutStream.flush();
 		}
@@ -344,9 +359,9 @@ public class ProtegeExporter
 			logger.error("Error while adding to tar: {}", e.getMessage());
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/**
 	 * Set the path to the Release directory. This path will be the base for including the Reactome GKB modules, as:
 	 * <pre>"-I"+this.releaseDirectory+"/modules"</pre>
@@ -416,5 +431,5 @@ public class ProtegeExporter
 	public void setSpeciesToProcess(Set<String> speciesToProcess)
 	{
 		this.speciesToProcess = speciesToProcess;
-	}	
+	}
 }

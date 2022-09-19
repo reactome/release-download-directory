@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory;
+package org.reactome.release.downloaddirectory;
 
 import org.gk.model.GKInstance;
 import org.gk.model.ReactomeJavaConstants;

@@ -12,5 +12,5 @@ git pull
 
 ## Generate the jar file and run the Download Directory program
 mvn clean package
-unzip -o target/downloadDirectory-distr.zip
-java -Xmx4096m -javaagent:downloadDirectory/lib/spring-instrument-4.2.4.RELEASE.jar -jar downloadDirectory/downloadDirectory.jar
+unzip -o target/download-directory-distr.zip
+java -Xmx4096m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar

@@ -1,4 +1,4 @@
-package org.reactome.release.downloadDirectory.GenerateGOAnnotationFile;
+package org.reactome.release.downloaddirectory.GenerateGOAnnotationFile;
 
 public class GOAGeneratorConstants {
 
@@ -7,6 +7,11 @@ public class GOAGeneratorConstants {
     public static final String BIOLOGICAL_PROCESS_LETTER = "P";
     public static final String CELLULAR_COMPONENT_LETTER = "C";
     public static final String MOLECULAR_FUNCTION_LETTER = "F";
+
+    // GO Qualifiers (meaning of association between protein and GO term)
+    public static final String BIOLOGICAL_PROCESS_QUALIFIER = "involved_in";
+    public static final String CELLULAR_COMPONENT_QUALIFIER = "located_in";
+    public static final String MOLECULAR_FUNCTION_QUALIFIER = "enables";
 
     // Species with alternate GO compartment
     public static final String B_ANTHRACIS_CROSS_REFERENCE = "1392";
@@ -22,7 +27,7 @@ public class GOAGeneratorConstants {
     public static final String T_GONDII_CROSS_REFERENCE = "5811";
 
     // Excluded GO accession that requires an IPI prefix that we do not currently handle
-    public static final String PROTEIN_BINDING_ANNOTATION = "0005515";
+    public static final String PROTEIN_BINDING_ANNOTATION = "GO:0005515";
 
     // These strings are used during Biological Process annotation generation. Since they
     // are specific to this module, I thought it appropriate that they had their own constants
