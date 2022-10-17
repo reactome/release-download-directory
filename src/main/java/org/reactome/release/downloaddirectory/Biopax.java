@@ -3,10 +3,10 @@ package org.reactome.release.downloaddirectory;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.biopax.validator.BiopaxIdentifier;
 import org.biopax.validator.api.Validator;
 import org.biopax.validator.api.ValidatorUtils;
 import org.biopax.validator.api.beans.Validation;
-import org.biopax.validator.impl.IdentifierImpl;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -175,7 +175,7 @@ public class Biopax {
 		String profile = "notstrict";
 		String outFormat = "xml";
 		// Define a new  validation result for the input data
-		Validation result = new Validation(new IdentifierImpl(), owlResource.getDescription(), autofix, null, maxErrors, profile);
+		Validation result = new Validation(new BiopaxIdentifier(), owlResource.getDescription(), autofix, null, maxErrors, profile);
 		result.setDescription(owlResource.getDescription());
 
 		validator.importModel(result, owlResource.getInputStream());

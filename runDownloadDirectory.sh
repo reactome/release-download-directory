@@ -11,6 +11,6 @@ git pull
 ./build_pathway_exchange.sh
 
 ## Generate the jar file and run the Download Directory program
-mvn clean package
+mvn clean package -DskipTests
 unzip -o target/download-directory-distr.zip
 java -Xmx4096m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar

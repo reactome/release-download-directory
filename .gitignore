@@ -12,3 +12,5 @@ download-directory.iml
 protege_files.tar
 protege_files/
 src/main/resources/run_protege_exporter.log
+src/main/resources/config.properties
+

@@ -16,7 +16,7 @@ import java.util.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({BiologicalProcessAnnotationBuilder.class, GOAGeneratorUtilities.class})
-@PowerMockIgnore({"org.apache.logging.log4j.*", "javax.management.*", "javax.script.*",
+@PowerMockIgnore({"org.apache.logging.log4j.*", "javax.management.*", "javax.script.*", "jdk.internal.reflect.*",
     "javax.xml.*", "com.sun.org.apache.xerces.*", "org.xml.sax.*", "com.sun.xml.*", "org.w3c.dom.*", "org.mockito.*"})
 
 public class BiologicalProcessAnnotationBuilderTest {
