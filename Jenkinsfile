@@ -26,24 +26,13 @@ pipeline {
 				}
 			}
 		}
-		// This stage builds an archive containing the download directory jar and its dependencies.
-		// It also unpacks that archive to be used in the following stage.
-		stage('Setup: Unpack DownloadDirectory archive'){
-			steps{
-				script{
-					sh "mvn clean package -DskipTests"
-					sh "rm -rf download-directory"
-					sh "unzip -o target/download-directory-distr.zip"
-				}
-			}
-		}
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
 		// The files that are produced are configurable. See the 'Running specific modules of Download Directory' section in the README.
 		stage('Main: Run DownloadDirectory'){
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-						sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
+						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/download-directory.jar $ConfigFile"
 					}
 				}
 			}
