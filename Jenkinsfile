@@ -26,6 +26,9 @@ pipeline {
 				}
 			}
 		}
+		stage("Compile"){
+			sh "mvn clean package -DskipTests"
+		}
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
 		// The files that are produced are configurable. See the 'Running specific modules of Download Directory' section in the README.
 		stage('Main: Run DownloadDirectory'){
