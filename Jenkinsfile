@@ -34,9 +34,11 @@ pipeline {
 		stage('Main: Run DownloadDirectory'){
 			steps{
 				script{
+					sh "sudo service neo4j stop"
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
 						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/download-directory.jar $ConfigFile"
 					}
+					sh "sudo service neo4j start"
 				}
 			}
 		}
