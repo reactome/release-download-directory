@@ -84,7 +84,7 @@ public class Main {
 				biopaxLevels.add(3);
 			}
 			try {
-				Biopax.execute(username, password, host, Integer.toString(port), database, releaseNumber, pathToSpeciesConfig, biopaxLevels);
+				BioPax.execute(username, password, host, Integer.toString(port), database, releaseNumber, pathToSpeciesConfig, biopaxLevels);
 			} catch (Exception e) {
 				failedSteps.add("BioPAX");
 				//TODO: Catch the specific exception when its a DataModel problem
