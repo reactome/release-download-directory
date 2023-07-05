@@ -53,7 +53,6 @@ public class FileValidation {
 
         // Compress all validation files into individual zip files
         logger.info("Zipping BioPAX" + biopaxLevel + " files...");
-        //writeFilesToZipFile(releaseNumber, ".owl", getBiopaxZipStream(biopaxLevel));
         writeFilesToZipFile(releaseNumber, ".xml", getValidatorZipStream(biopaxLevel));
         moveBioPaxValidationFileToDownloadFolder(releaseNumber, biopaxLevel);
     }
