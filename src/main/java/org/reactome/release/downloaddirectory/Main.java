@@ -15,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.release.downloaddirectory.BioPax.BioPax;
 import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOAFile;
 
 public class Main {
