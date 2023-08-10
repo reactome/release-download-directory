@@ -1,9 +1,6 @@
 package org.reactome.release.downloaddirectory;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,9 +16,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.model.GKInstance;
@@ -283,10 +283,9 @@ public class ProtegeExporter
 	/**
 	 * TARs the protege files.
 	 */
-	private void tarProtegeFiles()
-	{
+	private void tarProtegeFiles() {
 		try(FileOutputStream protegeTar = new FileOutputStream(PROTEGE_ARCHIVE_PATH);
-			TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(protegeTar);)
+			TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(protegeTar))
 		{
 			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach( protegeFile ->
 			{
@@ -307,14 +306,27 @@ public class ProtegeExporter
 			e.printStackTrace();
 		}
 
+		String zippedProtegeArchivePath = PROTEGE_ARCHIVE_PATH + ".gz";
+		try {
+			BufferedInputStream tarInputStream = new BufferedInputStream(new FileInputStream(PROTEGE_ARCHIVE_PATH));
+			GZIPOutputStream tarGZipOutputStream = new GZIPOutputStream(new FileOutputStream(zippedProtegeArchivePath));
+			byte tarByte;
+			while ((tarByte = (byte) tarInputStream.read()) != -1) {
+				tarGZipOutputStream.write(tarByte);
+			}
+			tarGZipOutputStream.finish();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		// Now that we're finished creating the tar file, move it to the download directory. Overwrite existing.
 		try
 		{
-			Files.move(Paths.get(PROTEGE_ARCHIVE_PATH), Paths.get(this.downloadDirectory + "/protege_files.tar"), StandardCopyOption.REPLACE_EXISTING);
+			Files.move(Paths.get(zippedProtegeArchivePath), Paths.get(this.downloadDirectory + "/protege_files.tar.gz"), StandardCopyOption.REPLACE_EXISTING);
 		}
 		catch (IOException e)
 		{
-			logger.error("An error occurred while trying to move {} to the download directory ({}). You may need to move it manually. Error is: {}", PROTEGE_ARCHIVE_PATH, this.downloadDirectory, e.getMessage());
+			logger.error("An error occurred while trying to move {} to the download directory ({}). You may need to move it manually. Error is: {}", zippedProtegeArchivePath, this.downloadDirectory, e.getMessage());
 			e.printStackTrace();
 		}
 	}
