@@ -15,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
+import org.reactome.release.downloaddirectory.BioPax.BioPax;
 import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOAFile;
 
 public class Main {
@@ -84,7 +85,7 @@ public class Main {
 				biopaxLevels.add(3);
 			}
 			try {
-				Biopax.execute(username, password, host, Integer.toString(port), database, releaseNumber, pathToSpeciesConfig, biopaxLevels);
+				BioPax.execute(username, password, host, Integer.toString(port), database, releaseNumber, pathToSpeciesConfig, biopaxLevels);
 			} catch (Exception e) {
 				failedSteps.add("BioPAX");
 				//TODO: Catch the specific exception when its a DataModel problem

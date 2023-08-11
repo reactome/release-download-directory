@@ -14,7 +14,7 @@ pipeline {
 		stage('Check AddLinks-Insertion build succeeded'){
 			steps{
 				script{
-                    			utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/BioModels")
+					utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/BioModels")
 				}
 			}
 		}
@@ -32,8 +32,7 @@ pipeline {
 			steps{
 				script{
 					sh "mvn clean package -DskipTests"
-					sh "rm -rf download-directory"
-					sh "unzip -o target/download-directory-distr.zip"
+					sh "cd target && mkdir lib && cd lib && jar -xvf ../download-directory.jar"
 				}
 			}
 		}
@@ -43,34 +42,34 @@ pipeline {
 			steps{
 				script{
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-						sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:download-directory/lib/spring-instrument-4.2.4.RELEASE.jar -jar download-directory/download-directory.jar $ConfigFile"
+						sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar $ConfigFile"
 					}
 				}
 			}
 		}
 		// Archive all download directory files before moving them to download/XX folder.
 		stage('Post: Create archive and move files to download folder'){
-		    	steps{
-		        	script{
+			steps{
+				script{
 					def releaseVersion = utils.getReleaseVersion()
 					def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
 					sh "tar -zcvf ${downloadDirectoryArchive} ${releaseVersion}"
 					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 					sh "rm -r ${releaseVersion}*"
-		        	}
-		    	}
+				}
+			}
 		}
 		// This stage archives all logs and other outputs produced by DownloadDirectory on S3.
 		stage('Post: Archive logs and validation files'){
 			steps{
 				script{
-				        def releaseVersion = utils.getReleaseVersion()
+					def releaseVersion = utils.getReleaseVersion()
 					def dataFiles = ["download-directory-v${releaseVersion}.tgz", "biopax_validator.zip", "biopax2_validator.zip"]
 					def logFiles = []
 					def foldersToDelete = ["/tmp/protege_files/"]
 					// This file is left over in the repository after zipping it up
 					sh "rm -f gene_association.reactome"
-				    	utils.cleanUpAndArchiveBuildFiles("download_directory", dataFiles, logFiles, foldersToDelete)
+					utils.cleanUpAndArchiveBuildFiles("download_directory", dataFiles, logFiles, foldersToDelete)
 				}
 			}
 		}
