@@ -202,3 +202,16 @@ This step creates a tab-delimited text file recording:
  * disease status (i.e. is it a disease pathway - true or false)
 
 for all human pathway instances which have their own pathway diagram (i.e. not a subpathway in a larger pathway diagram and not a diagram composed solely of subpathway nodes).
+
+# Docker
+
+To create the image move the Secrets.pm file into the root as well as the Jenkinsfile and then run the following command.
+
+```bash
+make build-image
+```
+
+To run the container on the same machine as the mysql database use the following command. Where 83 should be the relase version you are using. 
+```bash
+docker run --net=host -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock -v $(pwd)/83:/gitroot/reactome-release-directory/83 -it reactome/release-download-directory bash
+```
