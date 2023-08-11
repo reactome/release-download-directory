@@ -284,48 +284,44 @@ public class ProtegeExporter
 	 * TARs the protege files.
 	 */
 	private void tarProtegeFiles() {
-		try(FileOutputStream protegeTar = new FileOutputStream(PROTEGE_ARCHIVE_PATH);
-			TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(protegeTar))
-		{
-			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach( protegeFile ->
-			{
-				// Sanity check on the file: Since we're just iterating through a directory, there could be other stuff in there.
-				// Only continue if:
-				// 	1) the file is a NORMAL file (not a directory) and
-				// 	2) it matches the pattern Reactome_pathway_.*\.tar\.gz
-				if (protegeFile.toFile().isFile() && protegeFile.getFileName().toString().matches("Reactome_pathway_.*\\.tar\\.gz"))
-				{
-					logger.info("Adding {} to protege_files.tar", protegeFile.toString());
-					addFileToTar(tarOutStream, protegeFile);
+		try (FileOutputStream protegeTar = new FileOutputStream(PROTEGE_ARCHIVE_PATH);
+				TarArchiveOutputStream tarOutStream = new TarArchiveOutputStream(protegeTar)) {
+
+			Files.list(Paths.get(PROTEGE_FILES_DIR)).forEach(protegeFile -> {
+				try {
+					TarArchiveEntry tarEntry = new TarArchiveEntry(protegeFile.toFile(), protegeFile.getFileName().toString());
+					tarOutStream.putArchiveEntry(tarEntry);
+
+					Files.copy(protegeFile, tarOutStream);
+
+					tarOutStream.closeArchiveEntry();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			});
-			tarOutStream.finish();
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 		String zippedProtegeArchivePath = PROTEGE_ARCHIVE_PATH + ".gz";
 		try {
-			BufferedInputStream tarInputStream = new BufferedInputStream(new FileInputStream(PROTEGE_ARCHIVE_PATH));
-			GZIPOutputStream tarGZipOutputStream = new GZIPOutputStream(new FileOutputStream(zippedProtegeArchivePath));
-			byte tarByte;
-			while ((tarByte = (byte) tarInputStream.read()) != -1) {
-				tarGZipOutputStream.write(tarByte);
-			}
-			tarGZipOutputStream.finish();
+			try (InputStream tarInputStream = new FileInputStream(PROTEGE_ARCHIVE_PATH);
+					GZIPOutputStream tarGZipOutputStream = new GZIPOutputStream(new FileOutputStream(zippedProtegeArchivePath))) {
+
+				byte[] buffer = new byte[1024];
+				int bytesRead;
+				while ((bytesRead = tarInputStream.read(buffer)) != -1) {
+					tarGZipOutputStream.write(buffer, 0, bytesRead);
+				}
+					}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 		// Now that we're finished creating the tar file, move it to the download directory. Overwrite existing.
-		try
-		{
+		try {
 			Files.move(Paths.get(zippedProtegeArchivePath), Paths.get(this.downloadDirectory + "/protege_files.tar.gz"), StandardCopyOption.REPLACE_EXISTING);
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			logger.error("An error occurred while trying to move {} to the download directory ({}). You may need to move it manually. Error is: {}", zippedProtegeArchivePath, this.downloadDirectory, e.getMessage());
 			e.printStackTrace();
 		}
