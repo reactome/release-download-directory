@@ -4,6 +4,11 @@ pipeline {
         disableConcurrentBuilds abortPrevious: true
     }
     stages {
+        stage('Get Secrets') {
+            steps {
+                sh "cp /usr/local/reactomes/Reactome/production/Website/static/cgi-modules/GKB/Secrets.pm ."
+            }
+        }
         stage('Build') { 
             steps { 
                 script{
