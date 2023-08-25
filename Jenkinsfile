@@ -9,6 +9,10 @@ def utils = new Utilities()
 pipeline {
 	agent any
 
+    environment {
+        ECRURL = '851227637779.dkr.ecr.us-east-1.amazonaws.com'
+    }
+	
 	stages {
 		// This stage checks that an upstream project 'BioModels' was run successfully for its last build.
 		stage('Check AddLinks-Insertion build succeeded'){
@@ -18,31 +22,25 @@ pipeline {
 				}
 			}
 		}
-		// This stage clones, builds, and install the Pathway-Exchange dependency needed for DownloadDirectory.
-		stage('Setup: Install Pathway Exchange artifact'){
-			steps{
-				script{
-					sh "./build_pathway_exchange.sh"
-				}
-			}
-		}
-		// This stage builds an archive containing the download directory jar and its dependencies.
-		// It also unpacks that archive to be used in the following stage.
-		stage('Setup: Unpack DownloadDirectory archive'){
-			steps{
-				script{
-					sh "mvn clean package -DskipTests"
-					sh "cd target && mkdir lib && cd lib && jar -xvf ../download-directory.jar"
-				}
-			}
-		}
+		stage('pull image') {
+            steps {
+		        script{
+				    sh("eval \$(aws ecr get-login --no-include-email --region us-east-1)")
+				 	docker.withRegistry("https://" + ECRURL) {
+						docker.image("release-download-directory:latest").pull()
+				    }
+			    }
+		    }
+        }
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
 		// The files that are produced are configurable. See the 'Running specific modules of Download Directory' section in the README.
 		stage('Main: Run DownloadDirectory'){
 			steps{
 				script{
+					def releaseVersion = utils.getReleaseVersion()
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-						sh "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar $ConfigFile"
+						sh "docker run -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory
+/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar $ConfigFile\'"
 					}
 				}
 			}
