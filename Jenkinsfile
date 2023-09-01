@@ -54,6 +54,9 @@ pipeline {
 				script{
 					def releaseVersion = utils.getReleaseVersion()
 					def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
+					sh "chmod jenkins:jenkins ${releaseVersion} -R"
+					sh "mv biopax.zip ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
+					sh "mv biopax2.zip ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 					sh "tar -zcvf ${downloadDirectoryArchive} ${releaseVersion}"
 					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 					sh "rm -r ${releaseVersion}*"
