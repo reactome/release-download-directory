@@ -39,8 +39,7 @@ pipeline {
 				script{
 					def releaseVersion = utils.getReleaseVersion()
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-						sh "docker run -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory
-/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar $ConfigFile\'"
+						sh "docker run -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \\'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar $ConfigFile\\'"
 					}
 				}
 			}
