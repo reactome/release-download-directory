@@ -23,24 +23,15 @@ pipeline {
 			}
 		}
 		stage('pull image') {
-    			steps {
-        			script {
-            				withCredentials([file(credentialsId: 'AWS_Credentials', variable: 'awsCredentialsFile')]) {
-                				withCredentials([file(credentialsId: 'Config', variable: 'configFile')]) {
-                    					sh "aws configure set aws_access_key_id \"\$(cat \${awsCredentialsFile} | grep 'aws_access_key_id' | cut -d'=' -f2 | tr -d '[:space:]')\""
-                    					sh "aws configure set aws_secret_access_key \"\$(cat \${awsCredentialsFile} | grep 'aws_secret_access_key' | cut -d'=' -f2 | tr -d '[:space:]')\""
-                    					sh "aws configure set region us-east-1"
-                    					sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECRURL}"
-
-                    					docker.withRegistry("https://${ECRURL}", 'ecr:us-east-1') {
-                      						docker.image("release-download-directory:latest").pull()
-                    					}
-                				}
-            				}
-        			}
-    			}
-		}
-
+            		steps {
+		        	script{
+				    sh("eval \$(aws ecr get-login --no-include-email --region us-east-1)")
+					docker.withRegistry("https://" + ECRURL) {
+						docker.image("release-download-directory:latest").pull()
+					}
+			    	}
+		    	}
+        	}
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
 		// The files that are produced are configurable. See the 'Running specific modules of Download Directory' section in the README.
 		stage('Main: Run DownloadDirectory'){
