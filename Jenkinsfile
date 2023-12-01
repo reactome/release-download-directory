@@ -40,9 +40,11 @@ pipeline {
 					def releaseVersion = utils.getReleaseVersion()
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
 						sh "sudo service tomcat9 stop"
+						sh "sudo service neo4j stop"
 						sh "mkdir -p config"
 					        sh "sudo cp $ConfigFile config/auth.properties"
 						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar /config/auth.properties\'"
+						sh "sudo service neo4j start"
 						sh "sudo service tomcat9 start"
 					}
 				}
