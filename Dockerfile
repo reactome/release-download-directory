@@ -35,6 +35,7 @@ FROM maven:3.6.3-openjdk-8
 
 ENV GROUP_ID="org.reactome.pathway-exchange" \
     ARTIFACT_ID="pathwayExchange" \
+    DIRECTORY="Pathway-Exchange" \
     OUTPUT="pathwayExchange.jar" \
     VERSION=1.0.1
 
