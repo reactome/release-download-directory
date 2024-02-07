@@ -12,8 +12,8 @@ $GK_DB_PORT
 /;
 
 $GK_DB_HOST  = 'localhost';
-$GK_DB_USER  = '*db_user*';
-$GK_DB_PASS  = '*db_pass*';
+$GK_DB_USER  = '${DB_USER}';
+$GK_DB_PASS  = '${DB_PASS}';
 $GK_DB_NAME  = 'current';
 $GK_IDB_NAME = 'stable_identifiers';
 $GK_DB_PORT  = 3306;
