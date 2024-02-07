@@ -51,7 +51,8 @@ COPY --from=pathway-exchange-image /gitroot/$DIRECTORY/$OUTPUT /tmp/$OUTPUT
 RUN mvn install:install-file -Dfile="/tmp/$OUTPUT" -DgroupId=$GROUP_ID -DartifactId=$ARTIFACT_ID -Dversion=$VERSION -Dpackaging=jar && \
     mvn clean package -DskipTests && \
     mkdir target/lib && \
-    jar -xvf target/download-directory.jar -C target/lib
+    cd target/lib && \
+    jar -xvf ../download-directory.jar
 
 # install dependencies for protege perl program
 RUN apt update && apt install -y \
