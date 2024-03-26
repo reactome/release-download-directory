@@ -99,9 +99,9 @@ public class CreateGOAFile {
     private static void writeHeader(Path goaFilepath, String releaseNumber) throws IOException {
         final String gafHeader = String.join(System.lineSeparator(),
             "!gaf-version: 2.2",
-            "generated-by: Reactome",
-            "date-generated: " + getCurrentDateAsYYYYMMDD(),
-            "Project-release: Version " + releaseNumber
+            "!generated-by: Reactome",
+            "!date-generated: " + getCurrentDateAsYYYYMMDD(),
+            "!Project-release: Version " + releaseNumber
         ).concat(System.lineSeparator());
 
         Files.write(goaFilepath, gafHeader.getBytes(), StandardOpenOption.APPEND);
