@@ -99,7 +99,13 @@ gene_association.reactome
 models2pathways.tsv
 CreateReactome2BioSystems
 ```
-In this example, the BioPAX2 and PathwaySummationMappingFile steps will not be run. 
+In this example, the BioPAX2 and PathwaySummationMappingFile steps will not be run.
+
+Alternatively, specify the list of modules to run as a comma delimited string in the execution command with the '-steps' flag.
+
+`java -jar target/download-directory.jar -steps BioPAX2,BioPAX3` will only run the BioPAX2 and BioPAX3 modules.
+
+Note: these two options are mutually exclusive; the stepsToRun.config file will only be used if and only if no '-steps' flag is supplied.
 
 <b> Running specific modules in Jenkins </b>
 

@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -26,7 +28,6 @@ public class Main {
 		logger.info("Beginning Download Directory step");
 
 		String pathToConfig = args.length > 0 ? args[0] : Paths.get(RESOURCES_DIR ,"config.properties").toString();
-		String pathToStepConfig = args.length > 1 ? args[1] : Paths.get(RESOURCES_DIR,"stepsToRun.config").toString();
 
 		Properties props = new Properties();
 		props.load(new FileInputStream(pathToConfig));
@@ -48,18 +49,30 @@ public class Main {
 
 		String pathToSpeciesConfig = Paths.get("src/main/resources/Species.json").toString();
 
-		// Determine which steps will be run via stepsToRun.config file
-
+		// Determine which steps will be run via:
+        //     - command line flag of '-steps' first
+        //     - stepsToRun.config file if no command line flag is provided
 		Set<String> stepsToRun;
 
-		try(FileReader fr = new FileReader(pathToStepConfig);
-			BufferedReader br = new BufferedReader(fr);)
-		{
-			stepsToRun = br.lines().filter(
-					line -> !line.startsWith("#")
-			).collect(Collectors.toSet());
-			br.close();
-		}
+        for (int i = 0; i < args.length; i++){
+            if (args[i].equals("-steps")) {
+                stepsToRun = new HashSet<>(Arrays.asList(args[i + 1].split(",")));
+                break;
+            }
+        }
+
+        if (stepsToRun == null){
+            String pathToStepConfig = args.length > 1 ? args[1] : Paths.get(RESOURCES_DIR,"stepsToRun.config").toString();
+            
+            try(FileReader fr = new FileReader(pathToStepConfig);
+                BufferedReader br = new BufferedReader(fr);){
+                stepsToRun = br.lines().filter(
+                    line -> !line.startsWith("#")
+                ).collect(Collectors.toSet());
+                br.close();
+            }
+        }
+
 		// Temporary system for catching failed steps -- this will need to be cleaned up in future
 		List<String> failedSteps = new ArrayList<>();
 		//Begin download directory steps
