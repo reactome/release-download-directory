@@ -50,28 +50,28 @@ public class Main {
 		String pathToSpeciesConfig = Paths.get("src/main/resources/Species.json").toString();
 
 		// Determine which steps will be run via:
-        //     - command line flag of '-steps' first
-        //     - stepsToRun.config file if no command line flag is provided
+		//     - command line flag of '-steps' first
+		//     - stepsToRun.config file if no command line flag is provided
 		Set<String> stepsToRun;
 
-        for (int i = 0; i < args.length; i++){
-            if (args[i].equals("-steps")) {
-                stepsToRun = new HashSet<>(Arrays.asList(args[i + 1].split(",")));
-                break;
-            }
-        }
+		for (int i = 0; i < args.length; i++){
+			if (args[i].equals("-steps")) {
+				stepsToRun = new HashSet<>(Arrays.asList(args[i + 1].split(",")));
+				break;
+			}
+		}
 
-        if (stepsToRun == null){
-            String pathToStepConfig = args.length > 1 ? args[1] : Paths.get(RESOURCES_DIR,"stepsToRun.config").toString();
-            
-            try(FileReader fr = new FileReader(pathToStepConfig);
-                BufferedReader br = new BufferedReader(fr);){
-                stepsToRun = br.lines().filter(
-                    line -> !line.startsWith("#")
-                ).collect(Collectors.toSet());
-                br.close();
-            }
-        }
+		if (stepsToRun == null){
+			String pathToStepConfig = args.length > 1 ? args[1] : Paths.get(RESOURCES_DIR,"stepsToRun.config").toString();
+			
+			try(FileReader fr = new FileReader(pathToStepConfig);
+				BufferedReader br = new BufferedReader(fr);){
+				stepsToRun = br.lines().filter(
+					line -> !line.startsWith("#")
+				).collect(Collectors.toSet());
+				br.close();
+			}
+		}
 
 		// Temporary system for catching failed steps -- this will need to be cleaned up in future
 		List<String> failedSteps = new ArrayList<>();
