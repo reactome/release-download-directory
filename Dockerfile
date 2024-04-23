@@ -39,7 +39,7 @@ ENV GROUP_ID="org.reactome.pathway-exchange" \
     OUTPUT="pathwayExchange.jar" \
     VERSION=1.0.1
 
-WORKDIR  /gitroot/reactome-release-directory
+WORKDIR /gitroot/reactome-release-directory
 
 # copy "release-download-directory" from local
 COPY . .
