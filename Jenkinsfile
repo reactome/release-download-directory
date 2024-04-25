@@ -23,15 +23,15 @@ pipeline {
 			}
 		}
 		stage('pull image') {
-            		steps {
-		        	script{
+			steps {
+				script{
 				    sh("eval \$(aws ecr get-login --no-include-email --region us-east-1)")
 					docker.withRegistry("https://" + ECRURL) {
 						docker.image("release-download-directory:latest").pull()
 					}
-			    	}
-		    	}
-        	}
+				}
+			}
+		}
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
 		// The files that are produced are configurable. See the 'Running specific modules of Download Directory' section in the README.
 		stage('Main: Run DownloadDirectory'){
