@@ -23,15 +23,15 @@ pipeline {
 			}
 		}
 		stage('pull image') {
-            		steps {
-		        	script{
+			steps {
+				script{
 				    sh("eval \$(aws ecr get-login --no-include-email --region us-east-1)")
 					docker.withRegistry("https://" + ECRURL) {
 						docker.image("release-download-directory:latest").pull()
 					}
-			    	}
-		    	}
-        	}
+				}
+			}
+		}
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
 		// The files that are produced are configurable. See the 'Running specific modules of Download Directory' section in the README.
 		stage('Main: Run DownloadDirectory'){
@@ -42,7 +42,7 @@ pipeline {
 						sh "sudo service tomcat9 stop"
 						sh "sudo service neo4j stop"
 						sh "mkdir -p config"
-					        sh "sudo cp $ConfigFile config/auth.properties"
+						sh "sudo cp $ConfigFile config/auth.properties"
 						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar /config/auth.properties\'"
 						sh "sudo service neo4j start"
 						sh "sudo service tomcat9 start"

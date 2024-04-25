@@ -5,12 +5,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,12 +29,47 @@ import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOA
 public class Main {
 	private static final Logger logger = LogManager.getLogger();
 	private static final String RESOURCES_DIR = Paths.get("src", "main", "resources").toString();
-	public static void main(String[] args) throws Exception {
 
+	public static void main(String[] args) throws Exception {
 		logger.info("Beginning Download Directory step");
 
-		String pathToConfig = args.length > 0 ? args[0] : Paths.get(RESOURCES_DIR ,"config.properties").toString();
-		String pathToStepConfig = args.length > 1 ? args[1] : Paths.get(RESOURCES_DIR,"stepsToRun.config").toString();
+		String pathToConfig = null;
+		String pathToSpeciesConfig = null;
+		Set<String> stepsToRun = null;
+
+		Options options = new Options();
+		options.addOption(Option.builder("h").longOpt("help").build());
+		options.addOption("g", "general", true, "Specify file path to general config");
+		options.addOption("s", "species", true, "Specify file path to species config");
+		options.addOption("r", "steps", true, "Specify steps to run as a comma delimited string");
+
+		CommandLineParser parser = new DefaultParser();
+		try {
+			CommandLine cmd = parser.parse(options, args);
+			
+			if (cmd.hasOption("h")) {
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp("java -jar download-directory.jar", "\n", options, "\n", true);
+				return;
+			}
+
+			// set paths to config files
+			pathToConfig = cmd.hasOption("g") ? cmd.getOptionValue("g") : Paths.get(RESOURCES_DIR ,"config.properties").toString();
+			pathToSpeciesConfig = cmd.hasOption("s") ? cmd.getOptionValue("s") : Paths.get(RESOURCES_DIR, "Species.json").toString();
+			
+			// select steps to run
+			if (cmd.hasOption("r")) {
+				stepsToRun = new HashSet<>(Arrays.asList(cmd.getOptionValue("r").split(",")));
+			}
+			else {
+				try(FileReader fr = new FileReader(Paths.get(RESOURCES_DIR,"stepsToRun.config").toString()); 
+					BufferedReader br = new BufferedReader(fr)) {
+					stepsToRun = br.lines().filter(line -> !line.startsWith("#")).collect(Collectors.toSet());
+				}
+			}
+		} catch (Exception e) {
+			throw new Exception("Error parsing command line arguments: " + e.getMessage());
+		}
 
 		Properties props = new Properties();
 		props.load(new FileInputStream(pathToConfig));
@@ -46,20 +89,6 @@ public class Main {
 			releaseDir.mkdir();
 		}
 
-		String pathToSpeciesConfig = Paths.get("src/main/resources/Species.json").toString();
-
-		// Determine which steps will be run via stepsToRun.config file
-
-		Set<String> stepsToRun;
-
-		try(FileReader fr = new FileReader(pathToStepConfig);
-			BufferedReader br = new BufferedReader(fr);)
-		{
-			stepsToRun = br.lines().filter(
-					line -> !line.startsWith("#")
-			).collect(Collectors.toSet());
-			br.close();
-		}
 		// Temporary system for catching failed steps -- this will need to be cleaned up in future
 		List<String> failedSteps = new ArrayList<>();
 		//Begin download directory steps
