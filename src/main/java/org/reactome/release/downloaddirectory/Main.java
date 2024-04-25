@@ -17,6 +17,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -32,12 +33,12 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		logger.info("Beginning Download Directory step");
 
-        String pathToConfig = null;
-        String pathToSpeciesConfig = null;
-        Set<String> stepsToRun = null;
+		String pathToConfig = null;
+		String pathToSpeciesConfig = null;
+		Set<String> stepsToRun = null;
 
 		Options options = new Options();
-        options.addOption(Option.builder("h").longOpt("help").build());
+		options.addOption(Option.builder("h").longOpt("help").build());
 		options.addOption("g", "general", true, "Specify file path to general config");
 		options.addOption("s", "species", true, "Specify file path to species config");
 		options.addOption("r", "steps", true, "Specify steps to run as a comma delimited string");
@@ -47,28 +48,28 @@ public class Main {
 			CommandLine cmd = parser.parse(options, args);
 			
 			if (cmd.hasOption("h")) {
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("java -jar download-directory.jar", "\n", options, "\n", true);
-                return;
-            }
-
-            // set paths to config files
-            pathToConfig = cmd.hasOption("g") ? cmd.getOptionValue("g") : Paths.get(RESOURCES_DIR ,"config.properties").toString();
-            pathToSpeciesConfig = cmd.hasOption("s") ? cmd.getOptionValue("s") : Paths.get(RESOURCES_DIR, "Species.json").toString();
-            
-            // select steps to run
-            if (cmd.hasOption("r")) {
-                stepsToRun = new HashSet<>(Arrays.asList(cmd.getOptionValue("r").split(",")));
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp("java -jar download-directory.jar", "\n", options, "\n", true);
+				return;
 			}
-            else {
-                try(FileReader fr = new FileReader(Paths.get(RESOURCES_DIR,"stepsToRun.config").toString()); 
-                    BufferedReader br = new BufferedReader(fr)) {
-                    stepsToRun = br.lines().filter(line -> !line.startsWith("#")).collect(Collectors.toSet());
-                }
-            }
-        } catch (ParseException e) {
-            throw new ParseException("Error parsing command line arguments: " + e.getMessage());
-        }
+
+			// set paths to config files
+			pathToConfig = cmd.hasOption("g") ? cmd.getOptionValue("g") : Paths.get(RESOURCES_DIR ,"config.properties").toString();
+			pathToSpeciesConfig = cmd.hasOption("s") ? cmd.getOptionValue("s") : Paths.get(RESOURCES_DIR, "Species.json").toString();
+			
+			// select steps to run
+			if (cmd.hasOption("r")) {
+				stepsToRun = new HashSet<>(Arrays.asList(cmd.getOptionValue("r").split(",")));
+			}
+			else {
+				try(FileReader fr = new FileReader(Paths.get(RESOURCES_DIR,"stepsToRun.config").toString()); 
+					BufferedReader br = new BufferedReader(fr)) {
+					stepsToRun = br.lines().filter(line -> !line.startsWith("#")).collect(Collectors.toSet());
+				}
+			}
+		} catch (Exception e) {
+			throw new Exception("Error parsing command line arguments: " + e.getMessage());
+		}
 
 		Properties props = new Properties();
 		props.load(new FileInputStream(pathToConfig));
