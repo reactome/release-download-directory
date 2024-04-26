@@ -67,6 +67,7 @@ RUN apt update && apt install -y \
     tree \
     make \
     build-essential \
+    git \
     cpanminus \
     libssl-dev \ 
     zlib1g-dev \
