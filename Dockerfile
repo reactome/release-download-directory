@@ -1,5 +1,5 @@
 # ===== stage 1 =====
-FROM openjdk:8 as pathway-exchange-image
+FROM openjdk:8 as build-pathway-exchange
 
 ENV ANT_VERSION=1.8.0 \
     ANT_HOME=/opt/ant
@@ -31,7 +31,7 @@ RUN git clone $URL . && \
 
 
 # ===== stage 2 =====
-FROM maven:3.6.3-openjdk-8
+FROM maven:3.6.3-openjdk-8 as build-download-directory
 
 ENV GROUP_ID="org.reactome.pathway-exchange" \
     ARTIFACT_ID="pathwayExchange" \
@@ -45,14 +45,21 @@ WORKDIR /gitroot/reactome-release-directory
 COPY . .
 
 # copy jar build artifact from stage 1
-COPY --from=pathway-exchange-image /gitroot/$DIRECTORY/$OUTPUT /tmp/$OUTPUT
+COPY --from=build-pathway-exchange /gitroot/$DIRECTORY/$OUTPUT /tmp/$OUTPUT
 
 # install jar build artifact from stage 1, build "release-download-directory", and uncompress artifacts
 RUN mvn install:install-file -Dfile="/tmp/$OUTPUT" -DgroupId=$GROUP_ID -DartifactId=$ARTIFACT_ID -Dversion=$VERSION -Dpackaging=jar && \
-    mvn clean package -DskipTests && \
-    mkdir target/lib && \
-    cd target/lib && \
-    jar -xvf ../download-directory.jar
+    mvn clean package -DskipTests
+
+
+# ===== stage 3 =====
+FROM eclipse-temurin:8-jre-focal
+
+WORKDIR /opt/release-download-directory
+
+COPY --from=build-download-directory /gitroot/reactome-release-directory/target/download-directory.jar target/
+
+COPY --from=build-download-directory /gitroot/reactome-release-directory/src/main/resources/ src/main/resources/
 
 # install dependencies for protege perl program
 RUN apt update && apt install -y \
@@ -102,7 +109,7 @@ ENV PERL5LIB=/gitroot/reactome-release-directory/Release/modules/
 
 RUN git clone https://github.com/reactome/Release.git
 
-RUN mv /gitroot/reactome-release-directory/Secrets.pm  /gitroot/reactome-release-directory/Release/modules/GKB/
+RUN mv /gitroot/reactome-release-directory/Secrets.pm /gitroot/reactome-release-directory/Release/modules/GKB/
 
 # PadWalker needed for test-memory-cycle
 RUN cpanm Net::SSLeay && \

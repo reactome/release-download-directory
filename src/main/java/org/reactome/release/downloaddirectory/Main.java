@@ -31,8 +31,6 @@ public class Main {
 	private static final String RESOURCES_DIR = Paths.get("src", "main", "resources").toString();
 
 	public static void main(String[] args) throws Exception {
-		logger.info("Beginning Download Directory step");
-
 		String pathToConfig = null;
 		String pathToSpeciesConfig = null;
 		Set<String> stepsToRun = null;
@@ -70,6 +68,8 @@ public class Main {
 		} catch (Exception e) {
 			throw new Exception("Error parsing command line arguments: " + e.getMessage());
 		}
+
+		logger.info("Beginning Download Directory step");
 
 		Properties props = new Properties();
 		props.load(new FileInputStream(pathToConfig));
