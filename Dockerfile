@@ -106,11 +106,11 @@ RUN apt install -y \
     mariadb-client \
     libdbd-mysql-perl
 
-ENV PERL5LIB=/gitroot/reactome-release-directory/Release/modules/
+ENV PERL5LIB=/opt/release-download-directory/Release/modules/
 
 RUN git clone https://github.com/reactome/Release.git
 
-RUN mv /gitroot/reactome-release-directory/Secrets.pm /gitroot/reactome-release-directory/Release/modules/GKB/
+COPY secrets.pm /opt/release-download-directory/Release/modules/GKB/
 
 # PadWalker needed for test-memory-cycle
 RUN cpanm Net::SSLeay && \
