@@ -10,7 +10,7 @@ pipeline {
 	agent any
 
     environment {
-        ECRURL = '851227637779.dkr.ecr.us-east-1.amazonaws.com'
+        ECRURL = 'public.ecr.aws/reactome'
     }
 	
 	stages {
@@ -24,12 +24,7 @@ pipeline {
 		}
 		stage('pull image') {
 			steps {
-				script{
-				    sh("eval \$(aws ecr get-login --no-include-email --region us-east-1)")
-					docker.withRegistry("https://" + ECRURL) {
-						docker.image("release-download-directory:latest").pull()
-					}
-				}
+				sh "docker pull public.ecr.aws/reactome/release-download-directory:latest"
 			}
 		}
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
@@ -43,7 +38,7 @@ pipeline {
 						sh "sudo service neo4j stop"
 						sh "mkdir -p config"
 						sh "sudo cp $ConfigFile config/auth.properties"
-						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:target/lib/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar /config/auth.properties\'"
+						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:src/main/resources/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar -g /config/auth.properties\'"
 						sh "sudo service neo4j start"
 						sh "sudo service tomcat9 start"
 					}
