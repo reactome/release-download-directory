@@ -53,6 +53,8 @@ pipeline {
 					def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
 					sh "sudo chown jenkins:jenkins ${releaseVersion} -R"
 					sh "tar -zcvf ${downloadDirectoryArchive} ${releaseVersion}"
+					sh "mv ${releaseVersion}/biopax_validator.zip ."
+					sh "mv ${releaseVersion}/biopax2_validator.zip ."
 					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
 					sh "rm -r ${releaseVersion}*"
 				}
