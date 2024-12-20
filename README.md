@@ -1,6 +1,6 @@
 <h2>Download Directory</h2>
 
-The Download Directory step generates a number of files that can be downloaded from Reactome's <a href="https://reactome.org/download-data">download page</a>. It also generates an archive file during the <b>CreateReleaseTarball</b> step that acts as a snapshot of the <a href="https://github.com/reactome/Release">Release repository</a> and some services on the release server. This module has been rewritten from Perl to Java. 
+The Download Directory step generates several files that can be downloaded from Reactome's <a href="https://reactome.org/download-data">download page</a>. It also generates an archive file during the <b>CreateReleaseTarball</b> step that acts as a snapshot of the <a href="https://github.com/reactome/Release">Release repository</a> and some services on the release server. This module has been rewritten from Perl to Java. 
 <br><br>The steps of Download Directory and files produced are:
 
 - <a href="#databasedumps">DatabaseDumps</a>: `gk_stable_ids.sql`, `gk_current.sql`
