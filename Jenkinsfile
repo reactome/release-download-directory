@@ -7,10 +7,12 @@ import org.reactome.release.jenkins.utilities.Utilities
 def utils = new Utilities()
 
 pipeline {
-	agent any
+    agent any
 
     environment {
-        ECRURL = 'public.ecr.aws/reactome'
+        ECR_URL = 'public.ecr.aws/reactome/release-download-directory'
+        CONT_NAME = 'release_download_directory_container'
+        CONT_ROOT = '/opt/release-download-directory'
     }
 	
 	stages {
@@ -22,11 +24,18 @@ pipeline {
 				}
 			}
 		}
-		stage('pull image') {
-			steps {
-				sh "docker pull public.ecr.aws/reactome/release-download-directory:latest"
+
+		stage('Setup: Pull and clean docker environment'){
+			steps{
+				sh "docker pull ${ECR_URL}:latest"
+				sh """
+					if docker ps -a --format '{{.Names}}' | grep -Eq '${CONT_NAME}'; then
+						docker rm -f ${CONT_NAME}
+					fi
+				"""
 			}
 		}
+
 		// This stage executes the DownloadDirectory code. It generates various files that are downloadable from the reactome website.
 		// The files that are produced are configurable. See the 'Running specific modules of Download Directory' section in the README.
 		stage('Main: Run DownloadDirectory'){
@@ -38,7 +47,7 @@ pipeline {
 						sh "sudo service neo4j stop"
 						sh "mkdir -p config"
 						sh "sudo cp $ConfigFile config/auth.properties"
-						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECRURL}/release-download-directory:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:src/main/resources/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar -g /config/auth.properties\'"
+						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECR_URL}:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:src/main/resources/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar -g /config/auth.properties\'"
 						sh "sudo service neo4j start"
 						sh "sudo service tomcat9 start"
 					}
