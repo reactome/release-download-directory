@@ -20,7 +20,7 @@ pipeline {
 		stage('Check BioModels build succeeded'){
 			steps{
 				script{
-					utils.checkUpstreamBuildsSucceeded("Database Updates/job/BioModels")
+					utils.checkUpstreamBuildsSucceeded("database_updates/job/BioModels")
 				}
 			}
 		}
