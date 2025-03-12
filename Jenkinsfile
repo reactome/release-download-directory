@@ -17,10 +17,10 @@ pipeline {
 	
 	stages {
 		// This stage checks that an upstream project 'BioModels' was run successfully for its last build.
-		stage('Check AddLinks-Insertion build succeeded'){
+		stage('Check BioModels build succeeded'){
 			steps{
 				script{
-					utils.checkUpstreamBuildsSucceeded("Relational-Database-Updates/job/BioModels")
+					utils.checkUpstreamBuildsSucceeded("Database Updates/job/BioModels")
 				}
 			}
 		}
