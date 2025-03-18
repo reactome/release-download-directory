@@ -110,7 +110,7 @@ ENV PERL5LIB=/opt/release-download-directory/Release/modules/
 
 RUN git clone https://github.com/reactome/Release.git
 
-COPY secrets.pm /opt/release-download-directory/Release/modules/GKB/
+COPY secrets.pm /opt/release-download-directory/Release/modules/GKB/Secrets.pm
 
 # PadWalker needed for test-memory-cycle
 RUN cpanm Net::SSLeay && \
