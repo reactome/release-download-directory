@@ -31,7 +31,7 @@ RUN git clone $URL . && \
 
 
 # ===== stage 2 =====
-FROM maven:3.6.3-openjdk-8 as build-download-directory
+FROM maven:3.6.3-openjdk-11 as build-download-directory
 
 ENV GROUP_ID="org.reactome.pathway-exchange" \
     ARTIFACT_ID="pathwayExchange" \
