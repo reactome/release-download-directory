@@ -1,5 +1,5 @@
 # ===== stage 1 =====
-FROM openjdk:8 as build-pathway-exchange
+FROM openjdk:11 as build-pathway-exchange
 
 ENV ANT_VERSION=1.8.0 \
     ANT_HOME=/opt/ant
@@ -31,7 +31,7 @@ RUN git clone $URL . && \
 
 
 # ===== stage 2 =====
-FROM maven:3.6.3-openjdk-8 as build-download-directory
+FROM maven:3.6.3-openjdk-11 as build-download-directory
 
 ENV GROUP_ID="org.reactome.pathway-exchange" \
     ARTIFACT_ID="pathwayExchange" \
@@ -110,7 +110,7 @@ ENV PERL5LIB=/opt/release-download-directory/Release/modules/
 
 RUN git clone https://github.com/reactome/Release.git
 
-COPY secrets.pm /opt/release-download-directory/Release/modules/GKB/
+COPY Secrets.pm /opt/release-download-directory/Release/modules/GKB/
 
 # PadWalker needed for test-memory-cycle
 RUN cpanm Net::SSLeay && \

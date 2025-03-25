@@ -47,7 +47,7 @@ pipeline {
 						sh "sudo service neo4j stop"
 						sh "mkdir -p config"
 						sh "sudo cp $ConfigFile config/auth.properties"
-						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/gitroot/reactome-release-directory/${releaseVersion} --net=host  ${ECR_URL}:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:src/main/resources/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar -g /config/auth.properties\'"
+						sh "docker run -v /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock  -v \$(pwd)/config:/config -v \$(pwd)/${releaseVersion}:/opt/release-download-directory/${releaseVersion} --net=host  ${ECR_URL}:latest /bin/bash -c \'java -Xmx${env.JAVA_MEM_MAX}m -javaagent:src/main/resources/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar -g /config/auth.properties\'"
 						sh "sudo service neo4j start"
 						sh "sudo service tomcat9 start"
 					}
