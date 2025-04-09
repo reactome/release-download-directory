@@ -54,27 +54,12 @@ pipeline {
 				}
 			}
 		}
-		// Archive all download directory files before moving them to download/XX folder.
-		stage('Post: Create archive and move files to download folder'){
-			steps{
-				script{
-					def releaseVersion = utils.getReleaseVersion()
-					def downloadDirectoryArchive = "download-directory-v${releaseVersion}.tgz"
-					sh "sudo chown jenkins:jenkins ${releaseVersion} -R"
-					sh "tar -zcvf ${downloadDirectoryArchive} ${releaseVersion}"
-					sh "mv ${releaseVersion}/biopax_validator.zip ."
-					sh "mv ${releaseVersion}/biopax2_validator.zip ."
-					sh "mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
-					sh "rm -r ${releaseVersion}*"
-				}
-			}
-		}
 		// This stage archives all logs and other outputs produced by DownloadDirectory on S3.
 		stage('Post: Archive logs and validation files'){
 			steps{
 				script{
 					def releaseVersion = utils.getReleaseVersion()
-					def dataFiles = ["download-directory-v${releaseVersion}.tgz", "biopax_validator.zip", "biopax2_validator.zip"]
+					def dataFiles = ["${releaseVersion}/biopax_validator.zip", "${releaseVersion}/biopax2_validator.zip"]
 					def logFiles = []
 					def foldersToDelete = ["/tmp/protege_files/"]
 					// This file is left over in the repository after zipping it up
