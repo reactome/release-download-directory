@@ -53,7 +53,7 @@ RUN mvn install:install-file -Dfile="/tmp/$OUTPUT" -DgroupId=$GROUP_ID -Dartifac
 
 
 # ===== stage 3 =====
-FROM eclipse-temurin:8-jre-focal
+FROM eclipse-temurin:11-jre-focal
 
 WORKDIR /opt/release-download-directory
 
