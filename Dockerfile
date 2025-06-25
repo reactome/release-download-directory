@@ -60,3 +60,7 @@ WORKDIR /opt/release-download-directory
 COPY --from=build-download-directory /gitroot/reactome-release-directory/target/download-directory.jar target/
 
 COPY --from=build-download-directory /gitroot/reactome-release-directory/src/main/resources/ src/main/resources/
+
+RUN apt-get update && \
+    apt-get install -y mariadb-client && \
+    rm -rf /var/lib/apt/lists/*
