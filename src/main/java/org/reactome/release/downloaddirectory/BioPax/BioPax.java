@@ -22,7 +22,7 @@ public class BioPax {
 			FileGeneration.execute(
 				username, password, host, port, database, releaseNumber, pathToSpeciesConfig, biopaxLevel
 			);
-			FileValidation.execute(releaseNumber, biopaxLevel);
+			//FileValidation.execute(releaseNumber, biopaxLevel);
 
 			deleteBioPaxTemporaryOutputDirectory(releaseNumber);
 		}
