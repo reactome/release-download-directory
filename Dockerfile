@@ -6,6 +6,11 @@ ENV ANT_VERSION=1.8.0 \
 
 WORKDIR /tmp
 
+# Install git (needed for git clone)
+RUN apt-get update \
+    && apt-get install -y git \
+    && rm -rf /var/lib/apt/lists/*
+
 # download apache ant, extract to opt, and add exec to path
 RUN wget --no-check-certificate --no-cookies http://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz && \
     wget --no-check-certificate --no-cookies http://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz.md5 && \  
