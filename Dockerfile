@@ -1,5 +1,5 @@
 # ===== stage 1 =====
-FROM FROM eclipse-temurin:11-jdk as build-pathway-exchange
+FROM eclipse-temurin:11-jdk as build-pathway-exchange
 
 ENV ANT_VERSION=1.8.0 \
     ANT_HOME=/opt/ant
