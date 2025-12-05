@@ -56,6 +56,45 @@ pipeline {
 				}
 			}
 		}
+		
+		stage('Post: Validate Release Number in BioPax Files') {
+		    steps {
+		        script {
+		            def biopaxSandboxDir = 'biopax/'
+		            def releaseVersion = utils.getReleaseVersion()
+		
+		            sh """
+		                set -e
+		
+		                mkdir -p ${biopaxSandboxDir}
+		                cp ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/biopax* ${biopaxSandboxDir}
+		
+		                cd ${biopaxSandboxDir}
+		
+		                unzip -o biopax.zip
+		
+		                numOfOwlFiles=\$(ls -1 *.owl | wc -l)
+		                numOfCorrectOwlFiles=\$(grep -l "xml:base=\\"http://www.reactome.org/biopax/${releaseVersion}" *.owl | wc -l)
+		
+		                echo "Found \$numOfOwlFiles OWL files, \$numOfCorrectOwlFiles have correct version"
+		
+		                if [ "\$numOfOwlFiles" -eq "\$numOfCorrectOwlFiles" ]; then
+		                    echo "BioPax 3 files have correct Reactome version"
+		                else
+		                    echo "Not all BioPax 3 files have correct Reactome version."
+		                    exit 1
+		                fi
+		            """
+		        }
+		    }
+		
+		    post {
+		        always {
+		            sh "rm -rf biopax/"
+		        }
+		    }
+		}
+		
 		// This stage archives all logs and other outputs produced by DownloadDirectory on S3.
 		stage('Post: Archive logs and validation files'){
 			steps{
