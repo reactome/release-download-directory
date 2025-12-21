@@ -63,6 +63,7 @@ FROM eclipse-temurin:11-jre-focal
 WORKDIR /opt/release-download-directory
 
 COPY --from=build-download-directory /gitroot/reactome-release-directory/target/download-directory.jar target/
+COPY --from=build-download-directory /gitroot/reactome-release-directory/target/download-directory-verifier.jar target/
 
 COPY --from=build-download-directory /gitroot/reactome-release-directory/src/main/resources/ src/main/resources/
 
