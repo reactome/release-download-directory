@@ -14,7 +14,8 @@ RUN apt-get update \
 # download apache ant, extract to opt, and add exec to path
 RUN wget https://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz && \
     wget https://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz.sha512 && \
-    sha512sum -c apache-ant-${ANT_VERSION}-bin.tar.gz.sha512 && \
+    grep "$(sha512sum apache-ant-${ANT_VERSION}-bin.tar.gz | awk '{print $1}')" \
+         apache-ant-${ANT_VERSION}-bin.tar.gz.sha512 && \
     tar -zxf apache-ant-${ANT_VERSION}-bin.tar.gz -C /opt/ && \
     ln -s /opt/apache-ant-${ANT_VERSION} /opt/ant && \
     rm -f apache-ant-${ANT_VERSION}-bin.tar.gz* && \
