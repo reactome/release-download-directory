@@ -6,7 +6,7 @@
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d %-5level [%thread] %logger{25} - %msg%n</pattern>
-            <outputPatternAsHeader>true</outputPatternAsHeader>
+            <outputPatternAsHeader>false</outputPatternAsHeader>
         </encoder>
     </appender>
     <logger name="org.biopax" level="info"/>
