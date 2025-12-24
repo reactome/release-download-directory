@@ -1,7 +1,7 @@
 # ===== stage 1 =====
 FROM eclipse-temurin:11-jdk as build-pathway-exchange
 
-ENV ANT_VERSION=1.8.0 \
+ENV ANT_VERSION=1.10.14 \
     ANT_HOME=/opt/ant
 
 WORKDIR /tmp
