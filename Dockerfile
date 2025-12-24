@@ -12,15 +12,14 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # download apache ant, extract to opt, and add exec to path
-RUN wget --no-check-certificate --no-cookies http://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz && \
-    wget --no-check-certificate --no-cookies http://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz.md5 && \  
-    echo "$(cat apache-ant-${ANT_VERSION}-bin.tar.gz.md5) apache-ant-${ANT_VERSION}-bin.tar.gz" | md5sum && \ 
-    tar -zvxf apache-ant-${ANT_VERSION}-bin.tar.gz -C /opt/ && \ 
-    ln -s /opt/apache-ant-${ANT_VERSION} /opt/ant && \ 
-    rm -f apache-ant-${ANT_VERSION}-bin.tar.gz && \ 
-    rm -f apache-ant-${ANT_VERSION}-bin.tar.gz.md5 && \ 
-    update-alternatives --install "/usr/bin/ant" "ant" "/opt/ant/bin/ant" 1 && \
-    update-alternatives --set "ant" "/opt/ant/bin/ant" 
+RUN wget https://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz && \
+    wget https://archive.apache.org/dist/ant/binaries/apache-ant-${ANT_VERSION}-bin.tar.gz.sha512 && \
+    sha512sum -c apache-ant-${ANT_VERSION}-bin.tar.gz.sha512 && \
+    tar -zxf apache-ant-${ANT_VERSION}-bin.tar.gz -C /opt/ && \
+    ln -s /opt/apache-ant-${ANT_VERSION} /opt/ant && \
+    rm -f apache-ant-${ANT_VERSION}-bin.tar.gz* && \
+    update-alternatives --install /usr/bin/ant ant /opt/ant/bin/ant 1 && \
+    update-alternatives --set ant /opt/ant/bin/ant
 
 ENV URL="https://github.com/reactome/Pathway-Exchange.git" \
     DIRECTORY="Pathway-Exchange" \
