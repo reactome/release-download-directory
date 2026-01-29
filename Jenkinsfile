@@ -82,7 +82,7 @@ pipeline {
 						--net=host \\
 						--name ${CONT_NAME}_verifier \\
 						${ECR_URL}:latest \\
-						/bin/bash -c "java -jar target/data-export-verifier.jar --releaseNumber ${releaseVersion} --output ${CONT_ROOT}/${releaseVersion}"
+						/bin/bash -c "java -jar target/download-directory-verifier.jar --releaseNumber ${releaseVersion} --output ${CONT_ROOT}/${releaseVersion}"
 					"""
 				}
 			}
