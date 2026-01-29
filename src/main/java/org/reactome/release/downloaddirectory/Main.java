@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.gk.persistence.MySQLAdaptor;
 import org.reactome.release.downloaddirectory.BioPax.BioPax;
 import org.reactome.release.downloaddirectory.GenerateGOAnnotationFile.CreateGOAFile;
+import org.reactome.release.downloaddirectory.StableIdMapper.MapOldStableIds;
 
 public class Main {
 	private static final Logger logger = LogManager.getLogger();

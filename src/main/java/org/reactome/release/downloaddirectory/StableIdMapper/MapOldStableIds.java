@@ -1,4 +1,4 @@
-package org.reactome.release.downloaddirectory;
+package org.reactome.release.downloaddirectory.StableIdMapper;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,57 +36,52 @@ public class MapOldStableIds {
 		List<String> dbIds = new ArrayList<>(dbIdToStableIds.keySet());
 		Collections.sort(dbIds);
 
+		logger.info("Retrieving current stable identifiers from " + dba.getDBName());
+		Set<String> currentStableIdentifiers = getCurrentStableIdentifiers(dba);
+
 		// Iterate through array of stable IDs associated with DB ID, splitting into human and non-human groups.
-		List<List<Object>> hsaIds = new ArrayList<>();
-		List<List<Object>> nonHsaIds = new ArrayList<>();
+		List<StableIdMapping> hsaIds = new ArrayList<>();
+		List<StableIdMapping> nonHsaIds = new ArrayList<>();
 		for (String dbId : dbIds)
 		{
 			List<String> stableIds = dbIdToStableIds.get(dbId);
 			Collections.sort(stableIds);
+			stableIds = sortWithCurrentStableIdAsPrimary(stableIds, currentStableIdentifiers);
 
+			StableIdMapping stableIdMapping = new StableIdMapping(stableIds);
 			// After sorting the first stable ID in the array is considered the primary ID.
 			// An Array of Arrays is used here, with each interior array's first element being
 			// the primaryId string and the second element being an array of the remaining stable IDs.
 			// Example: [R-HSA-1006169, [REACT_118604]], [R-HSA-1006173, [REACT_119254]]]
-			if (!(stableIds.size() < 2) || (stableIds.get(0).matches("^R-.*")))
+			if (stableIdMapping.hasSecondaryIds() || stableIdMapping.hasNewFormatPrimaryId())
 			{
-				String primaryId = stableIds.get(0);
-				stableIds.remove(0);
-				ArrayList<Object> organizedIds = new ArrayList<>();
-				if (primaryId.matches("R-HSA.*"))
+				if (stableIdMapping.isHuman())
 				{
-					organizedIds.add(primaryId);
-					organizedIds.add(stableIds);
-					hsaIds.add(organizedIds);
+					hsaIds.add(stableIdMapping);
 				} else {
-					organizedIds.add(primaryId);
-					organizedIds.add(stableIds);
-					nonHsaIds.add(organizedIds);
+					nonHsaIds.add(stableIdMapping);
 				}
 			}
 		}
 
 		// Reorder the data so that the interior arrays that have only 1 element are going to be output first.
-		List<List<Object>> combinedIds = new ArrayList<>();
+		List<StableIdMapping> combinedIds = new ArrayList<>();
 		combinedIds.addAll(hsaIds);
 		combinedIds.addAll(nonHsaIds);
-		List<List<Object>> stableIdsToOldIdsMappings = new ArrayList<>();
-		List<List<Object>> deferredIds = new ArrayList<>();
-		for (List<Object> stableIdsArray : combinedIds)
+		List<StableIdMapping> stableIdsToOldIdsMappings = new ArrayList<>();
+		List<StableIdMapping> deferredIds = new ArrayList<>();
+		for (StableIdMapping stableIdMapping : combinedIds)
 		{
 			@SuppressWarnings("unchecked")
-			List<String> secondaryIds = (List<String>) stableIdsArray.get(1);
+			List<String> secondaryIds = stableIdMapping.getSecondaryIds();
 			if (secondaryIds.size() > 1)
 			{
-				deferredIds.add(stableIdsArray);
+				deferredIds.add(stableIdMapping);
 			} else {
-				stableIdsToOldIdsMappings.add(stableIdsArray);
+				stableIdsToOldIdsMappings.add(stableIdMapping);
 			}
 		}
 		stableIdsToOldIdsMappings.addAll(deferredIds);
-
-		logger.info("Retrieving current stable identifiers from " + dba.getDBName());
-		Set<String> currentStableIdentifiers = getCurrentStableIdentifiers(dba);
 
 		writeMappingsToFile(releaseNumber, stableIdsToOldIdsMappings, currentStableIdentifiers);
 
@@ -110,32 +105,6 @@ public class MapOldStableIds {
 	}
 
 	/**
-	 * Checks that the primary identifier taken from the stable_identifiers database is currently used, and it has secondary mappings.
-	 * @param currentStableIdentifiers Set<String> - Set of all StableIdentifiers currently in database.
-	 * @param primaryId String - Primary StableIdentifier that maps to secondaryIds.
-	 * @param secondaryIds List<String> - All StableIdentifiers (old and new formats) that map to the primary stable identifier.
-	 * @return boolean, indicating it is a currently used StableIdentifier with secondary mappings.
-	 */
-	private static boolean currentStableIdentifierWithMapping(Set<String> currentStableIdentifiers, String primaryId, List<String> secondaryIds) {
-		return currentStableIdentifiers.contains(primaryId) && !secondaryIds.isEmpty();
-	}
-
-	/**
-	 * Retrieves all StableIdentifiers in the current release database.
-	 * @param dba MySQLAdaptor, connecting to release_current database.
-	 * @return Set<String>, all StableIdentifiers in current release database.
-	 * @throws Exception - Thrown by MySQLAdaptor
-	 */
-	private static Set<String> getCurrentStableIdentifiers(MySQLAdaptor dba) throws Exception {
-		Collection<GKInstance> stableIdentifierInstances = dba.fetchInstancesByClass(ReactomeJavaConstants.StableIdentifier);
-		Set<String> currentStableIdentifiersSet = new HashSet<>();
-		for (GKInstance stableIdentifierInst : stableIdentifierInstances) {
-			currentStableIdentifiersSet.add(stableIdentifierInst.getAttributeValue(ReactomeJavaConstants.identifier).toString());
-		}
-		return currentStableIdentifiersSet;
-	}
-
-	/**
 	 * Uses the resultSet from the stable_identifiers database query (which retrieved *all* StableIdentifiers and
 	 * their associated instance ids that have ever existed in Reactome) to build a map of instance IDs to StableIdentifiers.
 	 * @param stableIdResults ResultSet - Data result of query to stable_identifiers database for stable identifiers and associated instance IDs.
@@ -156,6 +125,37 @@ public class MapOldStableIds {
 	}
 
 	/**
+	 * Retrieves all StableIdentifiers in the current release database.
+	 * @param dba MySQLAdaptor, connecting to release_current database.
+	 * @return Set<String>, all StableIdentifiers in current release database.
+	 * @throws Exception - Thrown by MySQLAdaptor
+	 */
+	private static Set<String> getCurrentStableIdentifiers(MySQLAdaptor dba) throws Exception {
+		Collection<GKInstance> stableIdentifierInstances = dba.fetchInstancesByClass(ReactomeJavaConstants.StableIdentifier);
+		Set<String> currentStableIdentifiersSet = new HashSet<>();
+		for (GKInstance stableIdentifierInst : stableIdentifierInstances) {
+			currentStableIdentifiersSet.add(stableIdentifierInst.getAttributeValue(ReactomeJavaConstants.identifier).toString());
+		}
+		return currentStableIdentifiersSet;
+	}
+
+	private static List<String> sortWithCurrentStableIdAsPrimary(List<String> stableIds, Set<String> currentStableIdentifiers) {
+		List<String> sortedStableIds = new ArrayList<>();
+
+		List<String> deferredStableIds = new ArrayList<>();
+		for (String stableId : stableIds) {
+			if (currentStableIdentifiers.contains(stableId)) {
+				sortedStableIds.add(stableId);
+			} else {
+				deferredStableIds.add(stableId);
+			}
+		}
+		sortedStableIds.addAll(deferredStableIds);
+
+		return sortedStableIds;
+	}
+
+	/**
 	 * With the old stable identifier mappings completed, write the results to the 'reactome_stable_ids.txt' file.
 	 * @param releaseNumber String - Current release number, used for storing files in release-specific location.
 	 * @param stableIdsToOldIdsMappings List<List<Object>> - List of current stable identifier mappings to older mappings.
@@ -163,19 +163,30 @@ public class MapOldStableIds {
 	 * @param currentStableIdentifiers Set<String>, all StableIdentifiers in current release database.
 	 * @throws IOException - Thrown if there are issues with creating mapping file.
 	 */
-	private static void writeMappingsToFile(String releaseNumber, List<List<Object>> stableIdsToOldIdsMappings, Set<String> currentStableIdentifiers) throws IOException {
+	private static void writeMappingsToFile(String releaseNumber, List<StableIdMapping> stableIdsToOldIdsMappings, Set<String> currentStableIdentifiers) throws IOException {
 		Path oldStableIdsMappingFilePath = Paths.get(releaseNumber, "reactome_stable_ids.txt");
 		String header = "# Reactome stable IDs for release " + releaseNumber + "\n" + "Stable_ID\told_identifier(s)\n";
 		Files.write(oldStableIdsMappingFilePath, header.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-		for (List<Object> stableIdsArray : stableIdsToOldIdsMappings)
+		for (StableIdMapping stableIdMapping : stableIdsToOldIdsMappings)
 		{
-			String primaryId = (String) stableIdsArray.get(0);
+			String primaryId = stableIdMapping.getPrimaryId();
 			@SuppressWarnings("unchecked")
-			List<String> secondaryIds = (ArrayList<String>) stableIdsArray.get(1);
+			List<String> secondaryIds = stableIdMapping.getSecondaryIds();
 			if (currentStableIdentifierWithMapping(currentStableIdentifiers, primaryId, secondaryIds)) {
 				String line = primaryId + "\t" + String.join(",", secondaryIds) + "\n";
 				Files.write(oldStableIdsMappingFilePath, line.getBytes(), StandardOpenOption.APPEND);
 			}
 		}
+	}
+
+	/**
+	 * Checks that the primary identifier taken from the stable_identifiers database is currently used, and it has secondary mappings.
+	 * @param currentStableIdentifiers Set<String> - Set of all StableIdentifiers currently in database.
+	 * @param primaryId String - Primary StableIdentifier that maps to secondaryIds.
+	 * @param secondaryIds List<String> - All StableIdentifiers (old and new formats) that map to the primary stable identifier.
+	 * @return boolean, indicating it is a currently used StableIdentifier with secondary mappings.
+	 */
+	private static boolean currentStableIdentifierWithMapping(Set<String> currentStableIdentifiers, String primaryId, List<String> secondaryIds) {
+		return currentStableIdentifiers.contains(primaryId) && !secondaryIds.isEmpty();
 	}
 }
