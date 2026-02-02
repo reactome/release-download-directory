@@ -13,11 +13,15 @@ import java.util.regex.Pattern;
 public class StableIdMapping {
 	private final static Pattern STABLE_ID_PATTERN = Pattern.compile("^R-(.{3})-.*");
 
-	private List<String> stableIds;
+	private final List<String> stableIds;
 	private List<String> secondaryIds;
 
 	public StableIdMapping(List<String> stableIds) {
-		this.stableIds = stableIds;
+		if (stableIds == null || stableIds.isEmpty()) {
+			throw new IllegalArgumentException("stableIds can not be null or empty");
+		}
+
+		this.stableIds = new ArrayList<>(stableIds);
 	}
 
 	public String getPrimaryId() {
@@ -52,7 +56,6 @@ public class StableIdMapping {
 
 	private List<String> filterOutMismatchedIdentifiers(List<String> stableIds) {
 		List<String> filteredStableIds = new ArrayList<>();
-		boolean debug = false;
 		for (String stableId : stableIds) {
 			if (stableId.startsWith("REACT_") ||
 				getAbbreviation(getPrimaryId()).equals(getAbbreviation(stableId)) ||
@@ -60,12 +63,7 @@ public class StableIdMapping {
 				(getAbbreviationExceptions().contains(getPrimaryId()) && noMismatchWithAlreadyFilteredStableIds(stableId, filteredStableIds))
 			) {
 				filteredStableIds.add(stableId);
-			} else {
-				debug = true;
 			}
-		}
-		if (debug) {
-			System.out.println(this.stableIds);
 		}
 		return filteredStableIds;
 	}
