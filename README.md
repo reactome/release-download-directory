@@ -81,10 +81,42 @@ Now that the Pathway-Exchange project is accessible and the `config.properties` 
 
 If the DownloadDirectory step has been run from the <a href="https://github.com/reactome/Release/blob/master/scripts/release/release.pl">release.pl</a> wrapper on the release server, the generated files would appear in `/usr/local/reactomes/Reactome/production/Website/static/download/67/` (if it was release 67). When the jar file is run directly, the files will appear in `/usr/local/gkb/scripts/release/download-directory/67/`. 
 
-<b> Running specific modules of Download Directory </b>
+<b> Command-line options </b>
 
-Specific files can be generated via the <a href="https://github.com/reactome/release-download-directory/blob/develop/src/main/resources/stepsToRun.config">stepsToRun.config</a> file found in the `src/main/resources/` folder. This file contains a list of all steps that will be run during the Download Directory process.
-Commenting out steps in this file will cause it to be excluded during the run. Sample below:
+The following command-line flags are available:
+
+| Flag | Long form | Description |
+|------|-----------|-------------|
+| `-h` | `--help` | Display usage information and exit |
+| `-r` | `--steps` | Specify which steps to run as a comma-delimited string (overrides `stepsToRun.config`) |
+| `-g` | `--general` | Path to general config file (defaults to `src/main/resources/config.properties`) |
+| `-s` | `--species` | Path to species config file (defaults to `src/main/resources/Species.json`) |
+
+Examples:
+```bash
+# Display help
+java -jar target/download-directory.jar -h
+
+# Run a single step
+java -jar target/download-directory.jar -r DatabaseDumps
+
+# Run multiple specific steps
+java -jar target/download-directory.jar -r BioPAX2,BioPAX3,GSEAOutput
+
+# Use a custom config file
+java -jar target/download-directory.jar -g /path/to/config.properties
+
+# Combine options
+java -jar target/download-directory.jar -g /path/to/config.properties -r DatabaseDumps
+```
+
+The valid step names that can be passed to `-r` are:
+`DatabaseDumps`, `BioPAX2`, `BioPAX3`, `GSEAOutput`, `FetchTestReactomeOntologyFiles`, `PathwaySummationMappingFile`, `MapOldStableIds`, `GenerateGOAnnotationFile`, `HumanPathwaysWithDiagrams`, `CreateReactome2BioSystems`, `protegeexporter`
+
+<b> Running specific modules via stepsToRun.config </b>
+
+If no `-r` flag is provided, the application reads which steps to run from the <a href="https://github.com/reactome/release-download-directory/blob/develop/src/main/resources/stepsToRun.config">stepsToRun.config</a> file in the `src/main/resources/` folder. This file contains a list of all steps that will be run during the Download Directory process.
+Commenting out steps in this file (with `#`) will cause them to be excluded during the run. Sample below:
 ```
 # This file is used to specify which steps in DownloadDirectory to execute.
 # Comment out any steps that don't need to be run.
@@ -101,11 +133,7 @@ CreateReactome2BioSystems
 ```
 In this example, the BioPAX2 and PathwaySummationMappingFile steps will not be run.
 
-Alternatively, specify the list of modules to run as a comma delimited string in the execution command with the '-steps' flag.
-
-`java -jar target/download-directory.jar -steps BioPAX2,BioPAX3` will only run the BioPAX2 and BioPAX3 modules.
-
-Note: these two options are mutually exclusive; the stepsToRun.config file will only be used if and only if no '-steps' flag is supplied.
+**Note:** The `-r` flag and `stepsToRun.config` are mutually exclusive. The config file is only used when no `-r` flag is supplied.
 
 <b> Running specific modules in Jenkins </b>
 
