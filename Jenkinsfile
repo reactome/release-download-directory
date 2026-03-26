@@ -60,8 +60,6 @@ pipeline {
 						"""
 						sh "sudo service neo4j start"
 						sh "sudo service tomcat9 start"
-						sh "sudo mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
-						sh "sudo rm -r ${releaseVersion}*"
 					}
 				}
 			}
@@ -88,16 +86,13 @@ pipeline {
 			}
 		}
 
-		// Creates a list of files and their sizes to use for comparison baseline during next release
-		stage('Post: Create files and sizes list to upload for next release\'s verifier') {
+		stage('Post: Move files to website download directory') {
 			steps {
 				script {
-					def fileSizeList = "files_and_sizes.txt"
 					def releaseVersion = utils.getReleaseVersion()
 
-					sh "find ${releaseNumber} -type f -printf \"%s\t%P\n\" > ${fileSizeList}"
-					sh "aws s3 --no-progress cp ${fileSizeList} s3://reactome/private/releases/${releaseVersion}/download_directory/data/"
-					sh "rm ${fileSizeList}"
+					sh "sudo mv ${releaseVersion}/* ${env.ABS_DOWNLOAD_PATH}/${releaseVersion}/"
+					sh "sudo rm -r ${releaseVersion}*"
 				}
 			}
 		}
@@ -136,6 +131,20 @@ pipeline {
 			post {
 				always {
 					sh "rm -rf biopax/"
+				}
+			}
+		}
+
+		// Creates a list of files and their sizes to use for comparison baseline during next release
+		stage('Post: Create files and sizes list to upload for next release\'s verifier') {
+			steps {
+				script {
+					def fileSizeList = "files_and_sizes.txt"
+					def releaseVersion = utils.getReleaseVersion()
+
+					sh "find ${releaseNumber} -type f -printf \"%s\t%P\n\" > ${fileSizeList}"
+					sh "aws s3 --no-progress cp ${fileSizeList} s3://reactome/private/releases/${releaseVersion}/download_directory/data/"
+					sh "rm ${fileSizeList}"
 				}
 			}
 		}
