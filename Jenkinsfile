@@ -142,7 +142,7 @@ pipeline {
 					def fileSizeList = "files_and_sizes.txt"
 					def releaseVersion = utils.getReleaseVersion()
 
-					sh "find ${releaseNumber} -type f -printf \"%s\t%P\n\" > ${fileSizeList}"
+					sh "find ${releaseVersion} -type f -printf \"%s\t%P\n\" > ${fileSizeList}"
 					sh "aws s3 --no-progress cp ${fileSizeList} s3://reactome/private/releases/${releaseVersion}/download_directory/data/"
 					sh "rm ${fileSizeList}"
 				}
