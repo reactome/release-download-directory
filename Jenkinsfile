@@ -85,6 +85,20 @@ pipeline {
 				}
 			}
 		}
+		
+		// Creates a list of files and their sizes to use for comparison baseline during next release
+		stage('Post: Create files and sizes list to upload for next release\'s verifier') {
+			steps {
+				script {
+					def fileSizeList = "files_and_sizes.txt"
+					def releaseVersion = utils.getReleaseVersion()
+
+					sh "find ${releaseVersion} -type f -printf \"%s\t%P\n\" > ${fileSizeList}"
+					sh "aws s3 --no-progress cp ${fileSizeList} s3://reactome/private/releases/${releaseVersion}/download_directory/data/"
+					sh "rm ${fileSizeList}"
+				}
+			}
+		}
 
 		stage('Post: Move files to website download directory') {
 			steps {
@@ -135,28 +149,14 @@ pipeline {
 			}
 		}
 
-		// Creates a list of files and their sizes to use for comparison baseline during next release
-		stage('Post: Create files and sizes list to upload for next release\'s verifier') {
-			steps {
-				script {
-					def fileSizeList = "files_and_sizes.txt"
-					def releaseVersion = utils.getReleaseVersion()
-
-					sh "find ${releaseVersion} -type f -printf \"%s\t%P\n\" > ${fileSizeList}"
-					sh "aws s3 --no-progress cp ${fileSizeList} s3://reactome/private/releases/${releaseVersion}/download_directory/data/"
-					sh "rm ${fileSizeList}"
-				}
-			}
-		}
-
 		// This stage archives all logs and other outputs produced by DownloadDirectory on S3.
 		stage('Post: Archive logs and validation files'){
 			steps{
 				script{
 					def releaseVersion = utils.getReleaseVersion()
-					def dataFiles = ["${releaseVersion}/biopax_validator.zip", "${releaseVersion}/biopax2_validator.zip"]
+					def dataFiles = []
 					def logFiles = []
-					def foldersToDelete = ["/tmp/protege_files/"]
+					def foldersToDelete = []
 					// This file is left over in the repository after zipping it up
 					sh "rm -f gene_association.reactome"
 					utils.cleanUpAndArchiveBuildFiles("download_directory", dataFiles, logFiles, foldersToDelete)
