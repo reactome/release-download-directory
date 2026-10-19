@@ -43,7 +43,7 @@ pipeline {
 				script{
 					def releaseVersion = utils.getReleaseVersion()
 					withCredentials([file(credentialsId: 'Config', variable: 'ConfigFile')]){
-						sh "sudo service tomcat9 stop"
+						sh "sudo service tomcat stop"
 						sh "sudo service neo4j stop"
 						sh "mkdir -p config"
 						sh "sudo cp $ConfigFile config/auth.properties"
@@ -59,7 +59,7 @@ pipeline {
 							 /bin/bash -c "java -Xmx${env.JAVA_MEM_MAX}m -javaagent:src/main/resources/spring-instrument-4.2.4.RELEASE.jar -jar target/download-directory.jar -g /config/auth.properties"
 						"""
 						sh "sudo service neo4j start"
-						sh "sudo service tomcat9 start"
+						sh "sudo service tomcat start"
 					}
 				}
 			}
