@@ -128,7 +128,7 @@ pipeline {
 						unzip -o biopax.zip
 		
 						numOfOwlFiles=\$(ls -1 *.owl | wc -l)
-						numOfCorrectOwlFiles=\$(grep -l "xml:base=\\"http://www.reactome.org/biopax/${releaseVersion}" *.owl | wc -l)
+						numOfCorrectOwlFiles=\$(grep -l "xml:base=\\"http://www.reactome.org/biopax/${releaseVersion}/" *.owl | wc -l)
 		
 						echo "Found \$numOfOwlFiles OWL files, \$numOfCorrectOwlFiles have correct version"
 		
