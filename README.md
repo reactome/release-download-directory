@@ -135,6 +135,8 @@ In this example, the BioPAX2 and PathwaySummationMappingFile steps will not be r
 
 **Note:** The `-r` flag and `stepsToRun.config` are mutually exclusive. The config file is only used when no `-r` flag is supplied.
 
+**Retiring a step:** when a step is turned off for good, add the files it made to `src/main/resources/retiredFiles.txt`. The verifier expects every file of the previous release's list, so without this the first release that no longer makes them fails its check. The Jenkinsfile leaves the listed files out of that list before the verifier runs.
+
 <b> Running specific modules in Jenkins </b>
 
 When running Download Directory in Jenkins, the code is cloned from Github each time so updating the stepsToRun file locally is not possible. Instead, you will need to upload the modified stepsToRun file as a Jenkins 'credential' before re-running download directory. This is explained step-by-step below:

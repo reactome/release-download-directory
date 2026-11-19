@@ -1,0 +1,14 @@
+# Files this step no longer makes, one path per line, relative to the release's folder
+# as the verifier's files_and_sizes.txt lists them. The Jenkinsfile leaves them out of
+# the previous release's list before the verifier runs, so their absence is not an error.
+# A file can stay here after the first release without it: by then no list names it.
+#
+# DatabaseDumps: the release no longer ships MySQL dumps.
+databases/gk_current.sql.gz
+databases/gk_stable_ids.sql.gz
+# BioPAX2: BioPAX Level 2 is no longer made (Level 3 is).
+biopax2.zip
+# CreateReactome2BioSystems: NCBI BioSystems has been retired.
+ReactomeToBioSystems.zip
+# GSEAOutput: data-export's ReactomePathwaysGmt task makes this file (reactome/data-export#19).
+ReactomePathways.gmt.zip

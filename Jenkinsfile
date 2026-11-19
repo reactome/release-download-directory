@@ -70,11 +70,24 @@ pipeline {
 			steps {
 				script {
 					def releaseVersion = utils.getReleaseVersion()
+					def previousVersion = releaseVersion.toInteger() - 1
+					def expectedList = "files_and_sizes.expected.txt"
+
+					// The verifier expects every file of the previous release's list, which it reads from
+					// files_and_sizes.txt in its working folder when that is there (and only otherwise
+					// downloads). Give it the previous release's list without the files this step no
+					// longer makes (src/main/resources/retiredFiles.txt).
+					sh """
+						aws s3 --no-progress cp s3://reactome/private/releases/${previousVersion}/download_directory/data/files_and_sizes.txt files_and_sizes.previous.txt
+						awk -F'\\t' 'NR == FNR { if (\$0 !~ /^#/ && \$0 != "") retired[\$0] = 1; next } !(\$2 in retired)' src/main/resources/retiredFiles.txt files_and_sizes.previous.txt > ${expectedList}
+						rm files_and_sizes.previous.txt
+					"""
 
 					sh """
 						docker run \\
 						--rm \\
 						-v ${pwd()}/${releaseVersion}:${CONT_ROOT}/${releaseVersion}/ \\
+						-v ${pwd()}/${expectedList}:${CONT_ROOT}/files_and_sizes.txt:ro \\
 						-v \$HOME/.aws:/root/.aws:ro \\
 						-e AWS_REGION=us-east-1 \\
 						--net=host \\
@@ -82,6 +95,7 @@ pipeline {
 						${ECR_URL}:latest \\
 						/bin/bash -c "java -jar target/download-directory-verifier.jar --releaseNumber ${releaseVersion} --output ${CONT_ROOT}/${releaseVersion}"
 					"""
+					sh "rm ${expectedList}"
 				}
 			}
 		}
